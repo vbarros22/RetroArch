@@ -373,8 +373,8 @@ static size_t ax_audio_write_avail(void* data)
 
 /* Sleep on the frame event until at least len samples are free below
  * the load limit, in the units write_avail() reports, len capped at
- * half the ring so the wait always ends. Returns the free space then,
- * or 0 once the voice is no longer running. */
+ * half the ring so the wait always ends. Returns the free space then;
+ * with the voice stopped, whatever room there is right away. */
 static size_t ax_audio_wait_writable(void* data, size_t len)
 {
    ax_audio_t* ax = (ax_audio_t*)data;
@@ -390,13 +390,23 @@ static size_t ax_audio_wait_writable(void* data, size_t len)
 
    for (;;)
    {
-      if (!AXIsMultiVoiceRunning(ax->mvoice))
-         break;
       written = ax_audio_written(ax);
       avail   = (written > AX_AUDIO_MAX_FREE)
             ? 0 : (AX_AUDIO_MAX_FREE - written);
       if (avail >= want)
          return avail * 2 * sizeof(int16_t);
+      /* A stopped voice drains nothing, so waiting on it would never
+       * free room. It is stopped at startup and after an underrun until
+       * write() has buffered AX_AUDIO_SAMPLE_LOAD frames: report what
+       * room there is so the caller keeps filling the ring (returning 0
+       * here starved the threaded pipeline, and the voice never
+       * started), and start the voice once enough is buffered. */
+      if (!AXIsMultiVoiceRunning(ax->mvoice))
+      {
+         ax_audio_start(ax, false);
+         if (!AXIsMultiVoiceRunning(ax->mvoice))
+            return avail * 2 * sizeof(int16_t);
+      }
       /* Timed and capped: a callback that has stopped hands the pass
        * back as no space coming from this call. */
       OSWaitEventWithTimeout(&ax->frame_event,

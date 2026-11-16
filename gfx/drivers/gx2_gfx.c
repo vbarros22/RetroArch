@@ -255,6 +255,17 @@ static const wiiu_render_mode_t gx2_render_mode_map[] =
    {1920, 1080, GX2_TV_RENDER_MODE_WIDE_1080P}  /* GX2_TV_SCAN_MODE_1080P */
 };
 
+/* Waits for the GPU to finish what it was given, but only while we own
+ * it. Once ProcUI has released the foreground (HOME menu, or quitting
+ * from it) the GPU belongs to the system: the queue was already drained
+ * before ProcUIDrawDoneRelease(), and a GX2DrawDone() now never returns,
+ * so teardown (font atlas, menu textures) hung the console. */
+static void gx2_drawdone_if_foreground(void)
+{
+   if (ProcUIInForeground())
+      GX2DrawDone();
+}
+
 static void gx2_free_shader_preset(wiiu_video_t *wiiu)
 {
    int i;
@@ -970,7 +981,7 @@ static void gx2_font_free(void* data, bool is_threaded)
 
    /* Ensure the GPU has finished any draws referencing the
     * font atlas and UBO before freeing the backing memory. */
-   GX2DrawDone();
+   gx2_drawdone_if_foreground();
 
    if (font->texture.surface.image)
       MEM1_free(font->texture.surface.image);
@@ -2950,7 +2961,7 @@ static void gx2_unload_texture(void *data,
 
    /* Ensure the GPU has finished any draws referencing this
     * texture before freeing the backing memory. */
-   GX2DrawDone();
+   gx2_drawdone_if_foreground();
 
    MEM2_free(texture->surface.image);
    free(texture);

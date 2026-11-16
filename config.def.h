@@ -1188,7 +1188,14 @@
 #define DEFAULT_OVERLAY_ABXY_METHOD 0
 #define DEFAULT_OVERLAY_CONTACT_SCALE 100
 
+/* Wii U pads report the physical A (right face button) as
+ * RETRO_DEVICE_ID_JOYPAD_A, so leaving the buttons unswapped gives the
+ * Nintendo layout: A confirms, B goes back. */
+#if defined(WIIU)
+#define DEFAULT_MENU_SWAP_OK_CANCEL_BUTTONS false
+#else
 #define DEFAULT_MENU_SWAP_OK_CANCEL_BUTTONS true
+#endif
 #define DEFAULT_MENU_SWAP_SCROLL_BUTTONS false
 #define DEFAULT_MENU_SINGLECLICK_PLAYLISTS false
 #define DEFAULT_MENU_ALLOW_TABS_BACK true
