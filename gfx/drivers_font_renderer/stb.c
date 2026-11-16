@@ -24,7 +24,7 @@
 #include <retro_miscellaneous.h>
 
 #ifdef WIIU
-#include <wiiu/os.h>
+#include <coreinit/memory.h>
 #endif
 
 #include <gfx/font/rtt.h>
@@ -98,7 +98,7 @@ static void *font_rasterizer_stb_init(uint8_t *font_data,
    {
       uint32_t size = 0;
       /* OS-owned shared memory: borrowed, not owned. */
-      if (!OSGetSharedData(SHARED_FONT_DEFAULT, 0,
+      if (!OSGetSharedData(OS_SHAREDDATATYPE_FONT_STANDARD, 0,
                (void**)&self->font_data, &size))
          goto error;
       self->font_data_size = size;

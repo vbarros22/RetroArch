@@ -21,8 +21,8 @@
 #include <libretro.h>
 #include <retro_miscellaneous.h>
 
-#include <wiiu/nsyskbd.h>
-#include <wiiu/vpad.h>
+#include <../../os/wiiu/include/nsyskbd/ra_nsyskbd.h>
+#include <../../os/wiiu/include/vpad/ra_input.h>
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"

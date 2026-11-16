@@ -115,7 +115,7 @@ extern long syscall(long number, ...);
 #endif
 
 #ifdef WIIU
-#include <wiiu/os/time.h>
+#include <coreinit/time.h>
 #endif
 
 #if defined(HAVE_LIBNX)
@@ -212,6 +212,8 @@ retro_perf_tick_t cpu_features_get_perf_counter(void)
    time_ticks = gk_ticks();
 #elif defined(GEKKO)
    time_ticks = gettime();
+#elif defined(WIIU)
+   time_ticks = OSGetSystemTime();
 #elif !defined(__MACH__) && !defined(__FreeBSD__) && (defined(_XBOX360) || defined(__powerpc__) || defined(__ppc__) || defined(__POWERPC__) || defined(__PSL1GHT__) || defined(__PPC64__) || defined(__powerpc64__))
    time_ticks = __mftb();
 #elif (defined(_POSIX_MONOTONIC_CLOCK) && _POSIX_MONOTONIC_CLOCK > 0) || defined(__QNX__) || defined(ANDROID)
@@ -229,8 +231,6 @@ retro_perf_tick_t cpu_features_get_perf_counter(void)
    time_ticks = ps2_clock();
 #elif defined(_3DS)
    time_ticks = svcGetSystemTick();
-#elif defined(WIIU)
-   time_ticks = OSGetSystemTime();
 #elif defined(HAVE_LIBNX)
    time_ticks = armGetSystemTick();
 #elif defined(__EMSCRIPTEN__)
@@ -262,7 +262,7 @@ retro_time_t cpu_features_get_time_usec(void)
 #elif defined(GEKKO)
    return ticks_to_microsecs(gettime());
 #elif defined(WIIU)
-   return ticks_to_us(OSGetSystemTime());
+   return OSTicksToMicroseconds(OSGetSystemTime());
 #elif defined(SWITCH) || defined(HAVE_LIBNX)
    return (svcGetSystemTick() * 10) / 192;
 #elif defined(_3DS)

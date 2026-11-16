@@ -32,7 +32,7 @@
 #elif defined(GEKKO) || defined(__PSL1GHT__) || defined(__QNX__)
 #include <unistd.h>
 #elif defined(WIIU)
-#include <wiiu/os/thread.h>
+#include <coreinit/thread.h>
 #elif defined(PSP)
 #include <pspthreadman.h>
 #elif defined(VITA)
@@ -130,7 +130,7 @@ void retro_sleep(unsigned msec);
 #elif defined(GEKKO) || defined(__PSL1GHT__) || defined(__QNX__)
 #define retro_sleep(msec) (usleep(1000 * (msec)))
 #elif defined(WIIU)
-#define retro_sleep(msec) (OSSleepTicks(ms_to_ticks((msec))))
+#define retro_sleep(msec) (OSSleepTicks(OSMillisecondsToTicks((msec))))
 #elif defined(__EMSCRIPTEN__)
 /* defined in frontend */
 #ifdef __cplusplus
@@ -188,7 +188,7 @@ void retro_sleep_us(unsigned usec);
 #elif defined(GEKKO) || defined(__PSL1GHT__) || defined(__QNX__)
 #define retro_sleep_us(usec) (usleep((usec)))
 #elif defined(WIIU)
-#define retro_sleep_us(usec) (OSSleepTicks(ms_to_ticks(((usec) + 500) / 1000)))
+#define retro_sleep_us(usec) (OSSleepTicks(OSMicrosecondsToTicks((usec))))
 #elif defined(__EMSCRIPTEN__)
 #define retro_sleep_us(usec) (retro_sleep(((usec) + 500) / 1000))
 #else

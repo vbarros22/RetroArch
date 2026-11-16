@@ -2773,6 +2773,9 @@ static const struct config_bool_row config_bool_rows[] = {
 #ifdef ANDROID
 #include "settings/settings_def_input_android_workaround.h"
 #endif
+#ifdef WIIU
+#include "settings/settings_def_input_wiiu_hbm.h"
+#endif
 #include "settings/settings_def_video_frame_time_sample.h"
 #include "settings/settings_def_video_adaptive_vsync.h"
 #include "settings/settings_def_video_gl_direct_spirv.h"
@@ -3612,6 +3615,9 @@ static const struct config_float_row config_float_rows[] = {
 #ifdef ANDROID
 #include "settings/settings_def_input_android_workaround.h"
 #endif
+#ifdef WIIU
+#include "settings/settings_def_input_wiiu_hbm.h"
+#endif
 #include "settings/settings_def_video_frame_time_sample.h"
 #include "settings/settings_def_video_adaptive_vsync.h"
 #include "settings/settings_def_video_gl_direct_spirv.h"
@@ -4256,6 +4262,9 @@ static const struct config_uint_row config_uint_rows[] = {
 #endif
 #ifdef ANDROID
 #include "settings/settings_def_input_android_workaround.h"
+#endif
+#ifdef WIIU
+#include "settings/settings_def_input_wiiu_hbm.h"
 #endif
 #include "settings/settings_def_video_frame_time_sample.h"
 #include "settings/settings_def_video_adaptive_vsync.h"
@@ -5057,6 +5066,9 @@ static const struct config_int_row config_int_rows[] = {
 #ifdef ANDROID
 #include "settings/settings_def_input_android_workaround.h"
 #endif
+#ifdef WIIU
+#include "settings/settings_def_input_wiiu_hbm.h"
+#endif
 #include "settings/settings_def_video_frame_time_sample.h"
 #include "settings/settings_def_video_adaptive_vsync.h"
 #include "settings/settings_def_video_gl_direct_spirv.h"
@@ -5700,6 +5712,9 @@ static struct config_int_setting *populate_settings_int(
 #endif
 #ifdef ANDROID
 #include "settings/settings_def_input_android_workaround.h"
+#endif
+#ifdef WIIU
+#include "settings/settings_def_input_wiiu_hbm.h"
 #endif
 #include "settings/settings_def_video_frame_time_sample.h"
 #include "settings/settings_def_video_adaptive_vsync.h"

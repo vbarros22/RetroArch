@@ -276,6 +276,7 @@
 #include "../settings/settings_def_video_console_screen.h"
 #include "../settings/settings_def_menu_steam.h"
 #include "../settings/settings_def_input_android_workaround.h"
+#include "../settings/settings_def_input_wiiu_hbm.h"
 #include "../settings/settings_def_video_frame_time_sample.h"
 #include "../settings/settings_def_video_adaptive_vsync.h"
 #include "../settings/settings_def_video_gl_direct_spirv.h"

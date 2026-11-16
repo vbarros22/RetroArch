@@ -16,14 +16,15 @@
 #include <stddef.h>
 #include <malloc.h>
 #include <string.h>
-#include <wiiu/gx2/common.h>
+#include "gx2/ra_shaders.h"
 #include "gx2_shader_inl.h"
 #include "menu_shaders.h"
+#include <gx2/enum.h>
 
 /* The sheet: ribbon_vertex's surface, from VertexCoord (x, z), the
  * ribbon time in UBO[4].w and its alpha in UBO[5].x. SIN and COS take
  * turns in [-0.5, 0.5]. */
-__attribute__((aligned(GX2_SHADER_ALIGNMENT)))
+__attribute__((aligned(GX2_SHADER_PROGRAM_ALIGNMENT)))
 static struct
 {
    u64 cf[32];
@@ -168,7 +169,7 @@ ALU_MUL(_R2,_x, KC0(4),_w, ALU_SRC_LITERAL,_x) ALU_LAST,
 };
 
 /* The dust: positions and lighting worked out on the CPU */
-__attribute__((aligned(GX2_SHADER_ALIGNMENT)))
+__attribute__((aligned(GX2_SHADER_PROGRAM_ALIGNMENT)))
 static const u64 stars_vs_program[] =
 {
    CALL_FS NO_BARRIER,
@@ -176,7 +177,7 @@ static const u64 stars_vs_program[] =
    (EXP_DONE(PARAM0, _R2, _x, _y, _z, _w) NO_BARRIER) END_OF_PROGRAM
 };
 
-__attribute__((aligned(GX2_SHADER_ALIGNMENT)))
+__attribute__((aligned(GX2_SHADER_PROGRAM_ALIGNMENT)))
 static struct
 {
    u64 cf[32];
@@ -326,7 +327,7 @@ static GX2UniformBlock uniform_blocks[] =
    {"UBO", 1, sizeof(menu_shader_uniform_t)}
 };
 
-static GX2AttribStream attribute_stream[] =
+static GX2AttribStream attribute_stream[1] =
 {
    {0, 0, 0, GX2_ATTRIB_FORMAT_FLOAT_32_32,
     GX2_ATTRIB_INDEX_PER_VERTEX, 0, GX2_COMP_SEL(_x, _y, _0, _1), GX2_ENDIAN_SWAP_DEFAULT}

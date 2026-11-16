@@ -14583,6 +14583,13 @@ static const setting_desc_t inp_desc_9[] = {
 };
 #endif
 
+#ifdef WIIU
+static const setting_desc_t inp_desc_wiiu_hbm[] = {
+/* GENERATED: rows come from settings_def_input_wiiu_hbm.h in order. */
+#include "../settings/settings_def_input_wiiu_hbm.h"
+};
+#endif
+
 static const setting_desc_t inp_desc_10[] = {
 /* GENERATED: rows come from settings_def_input_turbo.h in order. */
 #include "../settings/settings_def_input_turbo.h"
@@ -17729,6 +17736,10 @@ static void settings_build_input(
 #endif
 
             ADD_DESC(inp_desc_8);
+
+#ifdef WIIU
+            ADD_DESC(inp_desc_wiiu_hbm);
+#endif
 
 #ifdef ANDROID
             ADD_DESC(inp_desc_9);
@@ -21057,6 +21068,9 @@ static const settings_desc_table_t settings_desc_registry[] = {
    { inp_desc_8, (uint16_t)ARRAY_SIZE(inp_desc_8) },
 #ifdef ANDROID
    { inp_desc_9, (uint16_t)ARRAY_SIZE(inp_desc_9) },
+#endif
+#ifdef WIIU
+   { inp_desc_wiiu_hbm, (uint16_t)ARRAY_SIZE(inp_desc_wiiu_hbm) },
 #endif
    { inp_desc_10, (uint16_t)ARRAY_SIZE(inp_desc_10) },
    { inp_desc_11, (uint16_t)ARRAY_SIZE(inp_desc_11) },

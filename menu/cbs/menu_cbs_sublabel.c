@@ -531,6 +531,9 @@ DEFAULT_SUBLABEL_MACRO(action_bind_sublabel_input_nowinkey_enable,         MENU_
 DEFAULT_SUBLABEL_MACRO(action_bind_sublabel_input_winraw_xinput_enable,    MENU_ENUM_SUBLABEL_INPUT_WINRAW_XINPUT_ENABLE)
 DEFAULT_SUBLABEL_MACRO(action_bind_sublabel_input_winraw_player_lights,    MENU_ENUM_SUBLABEL_INPUT_WINRAW_PLAYER_LIGHTS)
 #endif
+#ifdef WIIU
+DEFAULT_SUBLABEL_MACRO(action_bind_sublabel_input_wiiu_enable_hbm,         MENU_ENUM_SUBLABEL_INPUT_WIIU_ENABLE_HBM)
+#endif
 #ifdef ANDROID
 DEFAULT_SUBLABEL_MACRO(action_bind_sublabel_input_select_physical_keyboard,   MENU_ENUM_SUBLABEL_INPUT_SELECT_PHYSICAL_KEYBOARD)
 DEFAULT_SUBLABEL_MACRO(action_bind_sublabel_android_input_disconnect_workaround, MENU_ENUM_SUBLABEL_ANDROID_INPUT_DISCONNECT_WORKAROUND)
@@ -3546,6 +3549,11 @@ int menu_cbs_init_bind_sublabel(menu_file_list_cbs_t *cbs,
             break;
          case MENU_ENUM_LABEL_INPUT_WINRAW_PLAYER_LIGHTS:
             BIND_ACTION_SUBLABEL(cbs, action_bind_sublabel_input_winraw_player_lights);
+            break;
+#endif
+#ifdef WIIU
+         case MENU_ENUM_LABEL_INPUT_WIIU_ENABLE_HBM:
+            BIND_ACTION_SUBLABEL(cbs, action_bind_sublabel_input_wiiu_enable_hbm);
             break;
 #endif
 #ifdef ANDROID

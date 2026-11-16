@@ -19,14 +19,27 @@
 #include <malloc.h>
 #include <math.h>
 
-#include <wiiu/os.h>
-#include <wiiu/gx2.h>
+#include <coreinit/time.h>
+
+#include <gx2/enum.h>
+#include <gx2/ra_shaders.h>
+#include <gx2/texture.h>
+#include <gx2/context.h>
+#include <gx2/mem.h>
+#include <gx2/state.h>
+#include <gx2/display.h>
+#include <gx2/registers.h>
+#include <gx2/draw.h>
+#include <gx2/clear.h>
+#include <gx2/swap.h>
+#include <gx2/event.h>
 
 #include <encodings/utf.h>
 #include <formats/image.h>
 #include <streams/image_texture_file.h>
 #include <file/file_path.h>
 #include <string/stdstring.h>
+#include <proc_ui/procui.h>
 
 #include <compat/strl.h>
 
@@ -340,7 +353,7 @@ static bool gx2_set_shader(void *data,
             wiiu->pass[i].vs_ubos[j] = MEM2_alloc(wiiu->pass[i].gfd->vs->uniformBlocks[j].size,
                   GX2_UNIFORM_BLOCK_ALIGNMENT);
             memset(wiiu->pass[i].vs_ubos[j], 0, wiiu->pass[i].gfd->vs->uniformBlocks[j].size);
-            GX2Invalidate(GX2_INVALIDATE_MODE_CPU_UNIFORM_BLOCK, wiiu->pass[i].vs_ubos[j],
+            GX2Invalidate(GX2_INVALIDATE_MODE_CPU | GX2_INVALIDATE_MODE_UNIFORM_BLOCK, wiiu->pass[i].vs_ubos[j],
                   wiiu->pass[i].gfd->vs->uniformBlocks[j].size);
          }
 
@@ -349,7 +362,7 @@ static bool gx2_set_shader(void *data,
             wiiu->pass[i].ps_ubos[j] = MEM2_alloc(wiiu->pass[i].gfd->ps->uniformBlocks[j].size,
                   GX2_UNIFORM_BLOCK_ALIGNMENT);
             memset(wiiu->pass[i].ps_ubos[j], 0, wiiu->pass[i].gfd->ps->uniformBlocks[j].size);
-            GX2Invalidate(GX2_INVALIDATE_MODE_CPU_UNIFORM_BLOCK, wiiu->pass[i].ps_ubos[j],
+            GX2Invalidate(GX2_INVALIDATE_MODE_CPU | GX2_INVALIDATE_MODE_UNIFORM_BLOCK, wiiu->pass[i].ps_ubos[j],
                   wiiu->pass[i].gfd->ps->uniformBlocks[j].size);
          }
       }
@@ -719,7 +732,7 @@ static void gfx_display_wiiu_draw_pipeline(
       wiiu->menu_shader_ubo->ribbon_alpha = ribbon[49 * 4 + 2];
    }
 
-   GX2Invalidate(GX2_INVALIDATE_MODE_CPU_UNIFORM_BLOCK, wiiu->menu_shader_ubo, sizeof(*wiiu->menu_shader_ubo));
+   GX2Invalidate(GX2_INVALIDATE_MODE_CPU | GX2_INVALIDATE_MODE_UNIFORM_BLOCK, wiiu->menu_shader_ubo, sizeof(*wiiu->menu_shader_ubo));
    GX2SetVertexUniformBlock(1, sizeof(*wiiu->menu_shader_ubo), wiiu->menu_shader_ubo);
    GX2SetPixelUniformBlock(1, sizeof(*wiiu->menu_shader_ubo), wiiu->menu_shader_ubo);
 }
@@ -741,7 +754,7 @@ static unsigned gfx_display_wiiu_bloom_begin(void *data, unsigned dims,
       size_t size;
       const void *code = gx2_bloom_program(&size);
       wiiu->bloom.ps = tex_shader.ps;
-      wiiu->bloom.ps.program = MEM2_alloc(size, GX2_SHADER_ALIGNMENT);
+      wiiu->bloom.ps.program = MEM2_alloc(size, GX2_SHADER_PROGRAM_ALIGNMENT);
       wiiu->bloom.ps.size = size;
       wiiu->bloom.ps.regs.sq_pgm_resources_ps.num_gprs = 6;
       wiiu->bloom.v = MEM2_alloc(MENU_BLOOM_PASSES * 4 * sizeof(*wiiu->bloom.v), GX2_VERTEX_BUFFER_ALIGNMENT);
@@ -751,7 +764,7 @@ static unsigned gfx_display_wiiu_bloom_begin(void *data, unsigned dims,
       memcpy(wiiu->bloom.ps.program, code, size);
       GX2Invalidate(GX2_INVALIDATE_MODE_CPU_SHADER, wiiu->bloom.ps.program, size);
       matrix_4x4_identity((*wiiu->bloom.mvp));
-      GX2Invalidate(GX2_INVALIDATE_MODE_CPU_UNIFORM_BLOCK,
+      GX2Invalidate(GX2_INVALIDATE_MODE_CPU | GX2_INVALIDATE_MODE_UNIFORM_BLOCK,
             wiiu->bloom.mvp, sizeof(*wiiu->bloom.mvp));
       wiiu->bloom.passes = menu_bloom_plan(wiiu->bloom.plan, small, true);
       for (i = 0; i < wiiu->bloom.passes; i++)
@@ -900,7 +913,7 @@ static bool gx2_font_make_texture(gx2_font_t *font)
 
    ubo_tex->width  = texture.surface.width;
    ubo_tex->height = texture.surface.height;
-   GX2Invalidate(GX2_INVALIDATE_MODE_CPU_UNIFORM_BLOCK, ubo_tex,
+   GX2Invalidate(GX2_INVALIDATE_MODE_CPU | GX2_INVALIDATE_MODE_UNIFORM_BLOCK, ubo_tex,
          sizeof(*ubo_tex));
 
    if (font->texture.surface.image)
@@ -1243,7 +1256,7 @@ static void gx2_set_projection(wiiu_video_t *wiiu)
    MAT_ELEM_4X4(rot, 1, 0) = sine;
    MAT_ELEM_4X4(rot, 1, 1) = cosine;
    matrix_4x4_multiply((*wiiu->ubo_mvp), rot, proj);
-   GX2Invalidate(GX2_INVALIDATE_MODE_CPU_UNIFORM_BLOCK, wiiu->ubo_mvp, sizeof(*wiiu->ubo_mvp));
+   GX2Invalidate(GX2_INVALIDATE_MODE_CPU | GX2_INVALIDATE_MODE_UNIFORM_BLOCK, wiiu->ubo_mvp, sizeof(*wiiu->ubo_mvp));
 }
 
 static void gx2_update_viewport(wiiu_video_t *wiiu)
@@ -1385,12 +1398,12 @@ static void *gx2_init(const video_info_t *video)
    wiiu->ubo_vp                       = MEM1_alloc(sizeof(*wiiu->ubo_vp), GX2_UNIFORM_BLOCK_ALIGNMENT);
    wiiu->ubo_vp->width                = wiiu->color_buffer.surface.width;
    wiiu->ubo_vp->height               = wiiu->color_buffer.surface.height;
-   GX2Invalidate(GX2_INVALIDATE_MODE_CPU_UNIFORM_BLOCK, wiiu->ubo_vp, sizeof(*wiiu->ubo_vp));
+   GX2Invalidate(GX2_INVALIDATE_MODE_CPU | GX2_INVALIDATE_MODE_UNIFORM_BLOCK, wiiu->ubo_vp, sizeof(*wiiu->ubo_vp));
 
    wiiu->ubo_tex                      = MEM1_alloc(sizeof(*wiiu->ubo_tex), GX2_UNIFORM_BLOCK_ALIGNMENT);
    wiiu->ubo_tex->width               = 1.0;
    wiiu->ubo_tex->height              = 1.0;
-   GX2Invalidate(GX2_INVALIDATE_MODE_CPU_UNIFORM_BLOCK, wiiu->ubo_tex, sizeof(*wiiu->ubo_tex));
+   GX2Invalidate(GX2_INVALIDATE_MODE_CPU | GX2_INVALIDATE_MODE_UNIFORM_BLOCK, wiiu->ubo_tex, sizeof(*wiiu->ubo_tex));
 
    wiiu->ubo_mvp                      = MEM1_alloc(sizeof(*wiiu->ubo_mvp), GX2_UNIFORM_BLOCK_ALIGNMENT);
    gx2_set_projection(wiiu);
@@ -1980,19 +1993,21 @@ static void gx2_free(void *data)
    if (!wiiu)
       return;
 
-   /* clear leftover image */
-   GX2ClearColor(&wiiu->color_buffer, 0.0f, 0.0f, 0.0f, 1.0f);
-   GX2CopyColorBufferToScanBuffer(&wiiu->color_buffer, GX2_SCAN_TARGET_DRC);
-   GX2CopyColorBufferToScanBuffer(&wiiu->color_buffer, GX2_SCAN_TARGET_TV);
+   if (ProcUIInForeground()) {
+      /* clear leftover image */
+      GX2ClearColor(&wiiu->color_buffer, 0.0f, 0.0f, 0.0f, 1.0f);
+      GX2CopyColorBufferToScanBuffer(&wiiu->color_buffer, GX2_SCAN_TARGET_DRC);
+      GX2CopyColorBufferToScanBuffer(&wiiu->color_buffer, GX2_SCAN_TARGET_TV);
 
-   GX2SwapScanBuffers();
-   GX2Flush();
-   GX2DrawDone();
-   GX2WaitForVsync();
+      GX2SwapScanBuffers();
+      GX2Flush();
+      GX2DrawDone();
+      GX2WaitForVsync();
+
+      GX2SetTVEnable(GX2_DISABLE);
+      GX2SetDRCEnable(GX2_DISABLE);
+   }
    GX2Shutdown();
-
-   GX2SetTVEnable(GX2_DISABLE);
-   GX2SetDRCEnable(GX2_DISABLE);
 
    GX2DestroyShader(&frame_shader);
    MEM2_free(wiiu->bloom.v);
@@ -2403,7 +2418,7 @@ static void gx2_update_uniform_block(wiiu_video_t *wiiu,
       }
    }
 
-   GX2Invalidate(GX2_INVALIDATE_MODE_CPU_UNIFORM_BLOCK, ubo, size);
+   GX2Invalidate(GX2_INVALIDATE_MODE_CPU | GX2_INVALIDATE_MODE_UNIFORM_BLOCK, ubo, size);
 }
 
 static bool gx2_frame(void *data, const void *frame,
@@ -2437,7 +2452,7 @@ static bool gx2_frame(void *data, const void *frame,
       if (wiiu->last_vsync >= last_vsync)
       {
          GX2WaitForVsync();
-         wiiu->last_vsync = last_vsync + ms_to_ticks(17);
+         wiiu->last_vsync = last_vsync + OSMillisecondsToTicks(17);
       }
       else
          wiiu->last_vsync = last_vsync;

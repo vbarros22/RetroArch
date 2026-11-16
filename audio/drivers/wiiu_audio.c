@@ -20,8 +20,14 @@
 
 #include <retro_atomic.h>
 
-#include <wiiu/os.h>
-#include <wiiu/ax.h>
+#include <coreinit/spinlock.h>
+#include <coreinit/cache.h>
+#include <coreinit/thread.h>
+#include <coreinit/event.h>
+#include <coreinit/time.h>
+#include <sndcore2/core.h>
+#include <sndcore2/device.h>
+#include <sndcore2/ra_multivoice.h>
 
 #include "../../os/wiiu/wiiu_dbg.h"
 #include "../../os/wiiu/system/memory.h"
@@ -120,15 +126,13 @@ static size_t ax_audio_frames_consumed(void *data)
    return retro_atomic_load_acquire_size(&ax->consumed);
 }
 
-extern void AXRegisterFrameCallback(void *cb);
-
 static void* ax_audio_init(const char* device, unsigned rate, unsigned latency,
       unsigned *new_rate)
 {
    AXVoiceOffsets offsets[2];
    u16 setup_buf[0x30] = {0};
    setup_buf[0x25]     = 2; /* we request 2 channels */
-   AXInitParams init   = {AX_INIT_RENDERER_48KHZ, 0, 0};
+   AXInitParams init   = {AX_INIT_RENDERER_48KHZ};
    AXVoiceVeData ve    = {0x8000, 0};
    ax_audio_t* ax      = (ax_audio_t*)calloc(1, sizeof(ax_audio_t));
 
@@ -277,7 +281,7 @@ static ssize_t ax_audio_write(void* data, const void* buf, size_t len)
       while (AXIsMultiVoiceRunning(ax->mvoice) && (count_avail < count))
       {
          OSWaitEventWithTimeout(&ax->frame_event,
-               (OSTime)OSMicroseconds(AX_AUDIO_WAIT_US));
+               (OSTime)OSMicrosecondsToTicks(AX_AUDIO_WAIT_US));
          written     = ax_audio_written(ax);
          count_avail = (written > AX_AUDIO_MAX_FREE ? 0 : (AX_AUDIO_MAX_FREE - written));
          if (--laps < 0)
@@ -396,7 +400,7 @@ static size_t ax_audio_wait_writable(void* data, size_t len)
       /* Timed and capped: a callback that has stopped hands the pass
        * back as no space coming from this call. */
       OSWaitEventWithTimeout(&ax->frame_event,
-            (OSTime)OSMicroseconds(AX_AUDIO_WAIT_US));
+            (OSTime)OSMicrosecondsToTicks(AX_AUDIO_WAIT_US));
       if (--laps < 0)
          break;
    }

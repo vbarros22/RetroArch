@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include <retro_atomic.h>
-#include <wiiu/os/atomic.h>
+
 
 static uint32_t swap_in_word(void *ptr, unsigned bits, uint32_t value)
 {

@@ -241,6 +241,12 @@
 #if defined(VITA) || defined(PSP) || defined(_3DS) || defined(GEKKO)
 #define DT_NO_POOL
 #endif
+/* The Wii U's devkitPPC/wut toolchain emits native PowerPC TLS
+ * relocations (R_PPC_TPREL16_*) for __thread, which the RPX/RPL format
+ * cannot carry: elf2rpl rejects them. */
+#if defined(WIIU) || defined(__WIIU__) || defined(__wiiu__)
+#define DT_NO_POOL
+#endif
 #endif
 
 #if !defined(DT_NO_POOL)

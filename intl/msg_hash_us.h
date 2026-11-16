@@ -12112,6 +12112,7 @@ MSG_HASH(MENU_ENUM_SUBLABEL_##T, sub)
 #define S_FLOAT_NS(f, T, n, d, rnd, sd, df, c, mn, mx, st, ok, rp, us) \
 MSG_HASH(MENU_ENUM_LABEL_VALUE_##T, us)
 #include "../settings/settings_def_input_android_workaround.h"
+#include "../settings/settings_def_input_wiiu_hbm.h"
 #undef S_BOOL
 #undef S_BOOL_NS
 #undef S_UINT
