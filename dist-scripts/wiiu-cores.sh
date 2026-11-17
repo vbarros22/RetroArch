@@ -63,6 +63,7 @@ for f in `ls -v *_${platform}.${EXT}`; do
 
    if [  -e ../retroarch_wiiu.rpx ] ; then
       cp ../retroarch_wiiu.rpx $retroarch_dir/cores/${name}_libretro.rpx
+      mkdir -p elf && cp -f ../objs/wiiu/retroarch_wiiu.rpx.elf elf/${name}_libretro.elf
       if [ -e "$INFO_DIR/${name}_libretro.info" ]; then
          cp -f "$INFO_DIR/${name}_libretro.info" $retroarch_dir/cores/info/
       else

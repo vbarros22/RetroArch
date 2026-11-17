@@ -55,6 +55,13 @@ typedef struct
     * interface reports and all this CPU moves in one piece. */
    retro_atomic_size_t consumed;
    retro_atomic_size_t underruns;
+   /* Rate the ring is written at. AX mixes at 48 kHz; any other rate is
+    * converted by the DSP's sample rate converter, so the frontend need
+    * not resample (e.g. 44.1 kHz PlayStation audio). */
+   uint32_t rate;
+   /* Remainder of rate * AX_AUDIO_SAMPLE_COUNT / 48000 between frame
+    * callbacks; only the callback touches it. */
+   uint32_t step_acc;
    bool nonblock;
 } ax_audio_t;
 
@@ -95,20 +102,26 @@ void wiiu_ax_callback(void)
 
    if (AXIsMultiVoiceRunning(ax->mvoice))
    {
+      /* Input frames the voice took this 3 ms frame: AX_AUDIO_SAMPLE_COUNT
+       * at 48 kHz, proportionally fewer through the rate converter. */
+      uint32_t step;
+      ax->step_acc += AX_AUDIO_SAMPLE_COUNT * ax->rate;
+      step          = ax->step_acc / AX_AUDIO_RATE;
+      ax->step_acc %= AX_AUDIO_RATE;
       /* Buffer underrun, stop playback to let it fill up */
       if (ax_audio_written(ax) < AX_AUDIO_SAMPLE_MIN)
       {
          AXSetMultiVoiceState(ax->mvoice, AX_VOICE_STATE_STOPPED);
          retro_atomic_fetch_add_size(&ax->underruns, 1);
       }
-      retro_atomic_fetch_sub_int(&ax->written, AX_AUDIO_SAMPLE_COUNT);
+      retro_atomic_fetch_sub_int(&ax->written, (int)step);
       /* Only here, where the voice is running and a frame of our
        * audio has actually gone: a stopped voice is not taking
        * anything, and a count that ran on regardless would report
        * the device consuming audio it never played. The estimator
        * discards windows that stall, which is the right reading of
        * a voice that stopped. */
-      retro_atomic_fetch_add_size(&ax->consumed, AX_AUDIO_SAMPLE_COUNT);
+      retro_atomic_fetch_add_size(&ax->consumed, step);
    }
    OSSignalEvent(&ax->frame_event);
 }
@@ -169,8 +182,20 @@ static void* ax_audio_init(const char* device, unsigned rate, unsigned latency,
    offsets[1].data           = ax->buffer_r;
    AXSetMultiVoiceOffsets(ax->mvoice, offsets);
 
-   AXSetMultiVoiceSrcType(ax->mvoice, AX_VOICE_SRC_TYPE_NONE);
-   AXSetMultiVoiceSrcRatio(ax->mvoice, 1.0f);
+   /* Take the requested rate when it is a sane one and let the DSP
+    * convert it to the 48 kHz mix; otherwise write at 48 kHz. */
+   ax->rate = (rate >= 22050 && rate <= AX_AUDIO_RATE) ? rate : AX_AUDIO_RATE;
+   ax->step_acc = 0;
+   if (ax->rate != AX_AUDIO_RATE)
+   {
+      AXSetMultiVoiceSrcType(ax->mvoice, AX_VOICE_SRC_TYPE_LINEAR);
+      AXSetMultiVoiceSrcRatio(ax->mvoice, (float)ax->rate / (float)AX_AUDIO_RATE);
+   }
+   else
+   {
+      AXSetMultiVoiceSrcType(ax->mvoice, AX_VOICE_SRC_TYPE_NONE);
+      AXSetMultiVoiceSrcRatio(ax->mvoice, 1.0f);
+   }
 
    AXSetMultiVoiceVe(ax->mvoice, &ve);
 
@@ -183,7 +208,7 @@ static void* ax_audio_init(const char* device, unsigned rate, unsigned latency,
    retro_atomic_int_init(&ax->written, 0);
    retro_atomic_size_init(&ax->consumed, 0);
    retro_atomic_size_init(&ax->underruns, 0);
-   *new_rate                 = AX_AUDIO_RATE;
+   *new_rate                 = ax->rate;
 
    OSInitEvent(&ax->frame_event, FALSE, OS_EVENT_MODE_AUTO);
 
