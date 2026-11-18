@@ -41,12 +41,13 @@ jobs:
           # New in 0.2 (need testing on hardware)
           - { name: genesis_plus_gx,  repo: libretro/Genesis-Plus-GX,            branch: master,     dir: . }
           - { name: picodrive,        repo: libretro/picodrive,                  branch: master,     dir: . }
-          - { name: mgba,             repo: libretro/mgba,                       branch: master,     dir: . }
+          # mgba: upstream dropped its libretro Makefile (CMake only now); to do
           - { name: vba_next,         repo: libretro/vba-next,                   branch: master,     dir: . }
           - { name: gambatte,         repo: libretro/gambatte-libretro,          branch: master,     dir: . }
-          - { name: gearboy,          repo: libretro/Gearboy,                    branch: master,     dir: platforms/libretro }
+          - { name: gearboy,          repo: libretro/Gearboy,                    branch: master,     dir: platforms/libretro, args: 'CC=powerpc-eabi-gcc CXX=powerpc-eabi-g++ AR=powerpc-eabi-ar' }
           - { name: nestopia,         repo: libretro/nestopia,                   branch: master,     dir: libretro }
-          - { name: snes9x2010,       repo: libretro/snes9x2010,                 branch: master,     dir: . }
+          # RetroArch is built without threads on the Wii U, so no frontend rthreads
+          - { name: snes9x2010,       repo: libretro/snes9x2010,                 branch: master,     dir: ., args: 'HAVE_THREADS=0 THREADS_FROM_FRONTEND=0' }
           - { name: mednafen_pce_fast, repo: libretro/beetle-pce-fast-libretro,  branch: master,     dir: . }
           - { name: mednafen_vb,      repo: libretro/beetle-vb-libretro,         branch: master,     dir: . }
           - { name: mednafen_ngp,     repo: libretro/beetle-ngp-libretro,        branch: master,     dir: . }
@@ -74,7 +75,7 @@ jobs:
         cd "src/${{ matrix.dir }}"
         MF=Makefile
         for m in Makefile.libretro makefile.libretro; do [ -f $m ] && MF=$m && break; done
-        make -f $MF platform=wiiu -j$(nproc)
+        make -f $MF platform=wiiu -j$(nproc) ${{ matrix.args }}
         mkdir -p "$GITHUB_WORKSPACE/out"
         A=$(find . -maxdepth 2 -name '*_libretro_wiiu.a' | head -1)
         test -n "$A" || { echo "no *_libretro_wiiu.a produced"; exit 1; }

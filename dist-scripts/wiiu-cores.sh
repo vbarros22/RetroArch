@@ -58,8 +58,14 @@ for f in `ls -v *_${platform}.${EXT}`; do
    cp -f "$f" ../libretro_${platform}.${EXT}
    echo NAME: $name
 
-   # Compile core
-   make -C ../ -f Makefile.${platform} LIBRETRO=$name $whole_archive -j$(nproc) || exit 1
+   # Compile core. A core that fails to link is reported and left out,
+   # so one bad core doesn't sink the whole package.
+   rm -f ../retroarch_wiiu.rpx
+   if ! make -C ../ -f Makefile.${platform} LIBRETRO=$name $whole_archive -j$(nproc); then
+      echo "WARNING: $name failed to link; left out of the package"
+      failed="$failed $name"
+      continue
+   fi
 
    if [  -e ../retroarch_wiiu.rpx ] ; then
       cp ../retroarch_wiiu.rpx $retroarch_dir/cores/${name}_libretro.rpx
@@ -71,5 +77,7 @@ for f in `ls -v *_${platform}.${EXT}`; do
       fi
    fi
 done
+
+if [ -n "$failed" ]; then echo "WARNING: cores left out:$failed"; fi
 
 # Additional build step
