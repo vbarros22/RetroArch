@@ -56,6 +56,8 @@ jobs:
           - { name: handy,            repo: libretro/libretro-handy,             branch: master,     dir: . }
           # FBNeo pinned to the libretro build of 17/11/2026, before "BurnArtwork": the artwork code
           # pulls in plutosvg, which needs sys/mman.h (absent on the Wii U)
+          # FBNeo is built but left out of the package: the full core is too big for
+          # the Wii U loader (hangs before main). A driver subset is on the to-do list.
           - { name: fbneo,            repo: libretro/FBNeo,                      branch: master,     dir: src/burner/libretro, ref: e0ecdb11af563f31e698e590d69a85f087f528b3 }
           - { name: fbalpha2012,      repo: libretro/fbalpha2012,                branch: master,     dir: svn-current/trunk }
           - { name: mame2003_plus,    repo: libretro/mame2003-plus-libretro,     branch: master,     dir: . }
@@ -140,6 +142,7 @@ jobs:
 
     - name: Build RetroArch (Salamander, .wuhb, one .rpx per core)
       run: |
+        rm -f RetroArch/dist-scripts/fbneo_libretro_wiiu.a   # too big, see the matrix
         export PATH="$PATH:$DEVKITPRO/tools/bin:$DEVKITPPC/bin"
         cd RetroArch/dist-scripts
         INFO_DIR=$GITHUB_WORKSPACE/libretro-core-info sh ./wiiu-cores.sh
