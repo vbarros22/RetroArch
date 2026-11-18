@@ -1,7 +1,12 @@
-# Wii U (Aroma) package: builds the launcher (.wuhb), one .rpx per core and
-# a .zip laid out like the SD card. Runs on pushes to aroma-atual and by
-# hand (Actions tab -> "Wii U (Aroma)" -> Run workflow). A tag named
-# wiiu-aroma-* also publishes the .zip as a GitHub release.
+# Wii U (Aroma) package. One job per core builds its <name>_libretro_wiiu.a
+# (a core that fails to build is left out, the rest still ship); the
+# package job then links one .rpx per core, builds the launcher (.wuhb)
+# and zips it all in the SD card layout. Runs on pushes to aroma-atual
+# and by hand (Actions -> "Wii U (Aroma)" -> Run workflow). A tag named
+# wiiu-aroma-* also publishes the .zip as a GitHub pre-release.
+#
+# To add a core: one line in the matrix below (repo, branch, folder with
+# its makefile). Makefile.libretro is used when present, Makefile otherwise.
 name: Wii U (Aroma)
 
 on:
@@ -18,48 +23,100 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  core:
+    name: core ${{ matrix.name }}
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 90
     container:
       image: devkitpro/devkitppc:latest
       options: --user root
-
-    env:
-      PCSX_REPO: https://github.com/vbarros22/pcsx_rearmed.git
-      PCSX_BRANCH: wiiu-aroma
-      RDB_URL: https://raw.githubusercontent.com/libretro/libretro-database/master/rdb
-
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Tested on hardware
+          - { name: fceumm,           repo: libretro/libretro-fceumm,            branch: master,     dir: . }
+          - { name: snes9x,           repo: libretro/snes9x,                     branch: master,     dir: libretro }
+          - { name: pcsx_rearmed,     repo: vbarros22/pcsx_rearmed,              branch: wiiu-aroma, dir: . }
+          # New in 0.2 (need testing on hardware)
+          - { name: genesis_plus_gx,  repo: libretro/Genesis-Plus-GX,            branch: master,     dir: . }
+          - { name: picodrive,        repo: libretro/picodrive,                  branch: master,     dir: . }
+          - { name: mgba,             repo: libretro/mgba,                       branch: master,     dir: . }
+          - { name: vba_next,         repo: libretro/vba-next,                   branch: master,     dir: . }
+          - { name: gambatte,         repo: libretro/gambatte-libretro,          branch: master,     dir: . }
+          - { name: gearboy,          repo: libretro/Gearboy,                    branch: master,     dir: platforms/libretro }
+          - { name: nestopia,         repo: libretro/nestopia,                   branch: master,     dir: libretro }
+          - { name: snes9x2010,       repo: libretro/snes9x2010,                 branch: master,     dir: . }
+          - { name: mednafen_pce_fast, repo: libretro/beetle-pce-fast-libretro,  branch: master,     dir: . }
+          - { name: mednafen_vb,      repo: libretro/beetle-vb-libretro,         branch: master,     dir: . }
+          - { name: mednafen_ngp,     repo: libretro/beetle-ngp-libretro,        branch: master,     dir: . }
+          - { name: mednafen_wswan,   repo: libretro/beetle-wswan-libretro,      branch: master,     dir: . }
+          - { name: stella2014,       repo: libretro/stella2014-libretro,        branch: master,     dir: . }
+          - { name: handy,            repo: libretro/libretro-handy,             branch: master,     dir: . }
+          - { name: fbneo,            repo: libretro/FBNeo,                      branch: master,     dir: src/burner/libretro }
+          - { name: fbalpha2012,      repo: libretro/fbalpha2012,                branch: master,     dir: svn-current/trunk }
+          - { name: mame2003_plus,    repo: libretro/mame2003-plus-libretro,     branch: master,     dir: . }
+          - { name: prboom,           repo: libretro/libretro-prboom,            branch: master,     dir: . }
+          - { name: nxengine,         repo: libretro/nxengine-libretro,          branch: master,     dir: . }
+          - { name: bluemsx,          repo: libretro/blueMSX-libretro,           branch: master,     dir: . }
     steps:
     - name: Tools
       run: |
         apt-get update
-        apt-get install -y --no-install-recommends git curl zip unzip ca-certificates
+        apt-get install -y --no-install-recommends git ca-certificates
+    - name: Fetch ${{ matrix.name }}
+      run: |
+        git clone --depth 1 --recurse-submodules --shallow-submodules \
+          -b "${{ matrix.branch }}" "https://github.com/${{ matrix.repo }}.git" src
+    - name: Build ${{ matrix.name }}
+      run: |
+        export PATH="$PATH:$DEVKITPRO/tools/bin:$DEVKITPPC/bin"
+        cd "src/${{ matrix.dir }}"
+        MF=Makefile
+        for m in Makefile.libretro makefile.libretro; do [ -f $m ] && MF=$m && break; done
+        make -f $MF platform=wiiu -j$(nproc)
+        mkdir -p "$GITHUB_WORKSPACE/out"
+        A=$(find . -maxdepth 2 -name '*_libretro_wiiu.a' | head -1)
+        test -n "$A" || { echo "no *_libretro_wiiu.a produced"; exit 1; }
+        cp "$A" "$GITHUB_WORKSPACE/out/${{ matrix.name }}_libretro_wiiu.a"
+    - uses: actions/upload-artifact@v4
+      with:
+        name: core-${{ matrix.name }}
+        path: out/*.a
+        retention-days: 7
+
+  package:
+    needs: core
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    container:
+      image: devkitpro/devkitppc:latest
+      options: --user root
+    env:
+      RDB_URL: https://raw.githubusercontent.com/libretro/libretro-database/master/rdb
+    steps:
+    - name: Tools
+      run: |
+        apt-get update
+        apt-get install -y --no-install-recommends git curl zip unzip ca-certificates python3
 
     - uses: actions/checkout@v4
       with:
         path: RetroArch
 
-    - name: Fetch cores, core info and assets
+    - uses: actions/download-artifact@v4
+      with:
+        pattern: core-*
+        merge-multiple: true
+        path: RetroArch/dist-scripts
+
+    - name: Core info and menu assets
       run: |
-        git clone --depth 1 --recurse-submodules -b "$PCSX_BRANCH" "$PCSX_REPO" pcsx_rearmed
-        git clone --depth 1 https://github.com/libretro/libretro-fceumm.git
-        git clone --depth 1 https://github.com/libretro/snes9x.git
+        ls -la RetroArch/dist-scripts/*.a
         git clone --depth 1 https://github.com/libretro/libretro-core-info.git
         curl -fL -o RetroArch/dist-scripts/assets.zip \
           https://buildbot.libretro.com/assets/frontend/assets.zip
-
-    - name: Build cores
-      run: |
-        export PATH="$PATH:$DEVKITPRO/tools/bin:$DEVKITPPC/bin"
-        J=$(nproc)
-        DIST=$GITHUB_WORKSPACE/RetroArch/dist-scripts
-        make -C libretro-fceumm -f Makefile.libretro platform=wiiu -j$J
-        cp libretro-fceumm/fceumm_libretro_wiiu.a "$DIST/"
-        make -C snes9x/libretro platform=wiiu -j$J
-        cp snes9x/libretro/snes9x_libretro_wiiu.a "$DIST/"
-        make -C pcsx_rearmed -f Makefile.libretro platform=wiiu -j$J
-        cp pcsx_rearmed/pcsx_rearmed_libretro_wiiu.a "$DIST/"
 
     - name: Build RetroArch (Salamander, .wuhb, one .rpx per core)
       run: |
@@ -72,16 +129,28 @@ jobs:
         SD=$GITHUB_WORKSPACE/sd
         mkdir -p "$SD/retroarch/database/rdb" "$SD/retroarch/cores/system"
         cp -r RetroArch/pkg/wiiu/wiiu RetroArch/pkg/wiiu/retroarch "$SD/"
-        for db in "Nintendo - Nintendo Entertainment System" \
-                  "Nintendo - Super Nintendo Entertainment System" \
-                  "Sony - PlayStation"; do
-          curl -fL -o "$SD/retroarch/database/rdb/$db.rdb" \
-            "$RDB_URL/$(echo "$db" | sed 's/ /%20/g').rdb"
-        done
+        # The databases each shipped core's .info asks for
+        python3 - "$SD/retroarch/cores/info" "$SD/retroarch/database/rdb" "$RDB_URL" <<'PY'
+        import os, re, sys, urllib.parse, urllib.request
+        info_dir, rdb_dir, base = sys.argv[1:4]
+        names = set()
+        for f in os.listdir(info_dir):
+            for line in open(os.path.join(info_dir, f), encoding="utf-8", errors="ignore"):
+                m = re.match(r'\s*database\s*=\s*"([^"]*)"', line)
+                if m:
+                    names.update(n.strip() for n in m.group(1).split("|") if n.strip())
+        for n in sorted(names):
+            url = base + "/" + urllib.parse.quote(n + ".rdb")
+            try:
+                urllib.request.urlretrieve(url, os.path.join(rdb_dir, n + ".rdb"))
+                print("rdb:", n)
+            except Exception as e:
+                print("rdb missing:", n, e)
+        PY
         cp RetroArch/pkg/wiiu/README.md "$SD/LEIA-ME-WiiU.md"
         cp RetroArch/pkg/wiiu/escutar-log.ps1 "$SD/"
         echo "Coloque aqui as BIOS (veja LEIA-ME-WiiU.md)" > "$SD/retroarch/cores/system/BIOS-AQUI.txt"
-        ls -R "$SD" | head -50
+        ls "$SD/retroarch/cores"
         cd "$SD" && zip -r "$GITHUB_WORKSPACE/RetroArch-WiiU-Aroma.zip" .
 
     - uses: actions/upload-artifact@v4
