@@ -226,9 +226,9 @@ log em arquivo.
 | 32X | PicoDrive | Knuckles' Chaotix | Perfeito |
 | Mega-CD | Genesis Plus GX | Garou Densetsu Special | Perfeito (não abriu no PicoDrive) |
 | Famicom Disk System | Nestopia | Dracula II | Perfeito (no FCEUmm, `ERR 07` ao virar o disco: use Controle de disco → Ejetar, troque o lado, Inserir) |
-| PC Engine | Beetle PCE Fast | Out Run, Rondo of Blood | Sprites espelhados — corrigido em `core-patches/mednafen_pce_fast.patch` |
 | MSX | blueMSX | Vampire Killer, Metal Gear 1/2 | "Failed to load content": faltavam as pastas `Machines` e `Databases` em `system/` (agora vão no pacote) |
-| Neo Geo CD | FBNeo | Metal Slug 2 (.cue) | Travou — em investigação |
+| Neo Geo CD | FBNeo | Metal Slug 2 | `.cue` travou; `.chd` não é aceito pelo FBNeo (só `.cue`/`.ccd`) — em investigação |
+| PC Engine | Beetle PCE Fast | Out Run, Rondo of Blood | Perfeito (os sprites saíam espelhados; corrigido em `core-patches/mednafen_pce_fast.patch`) |
 
 ---
 

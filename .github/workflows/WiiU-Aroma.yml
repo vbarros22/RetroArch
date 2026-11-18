@@ -54,9 +54,9 @@ jobs:
           - { name: mednafen_wswan,   repo: libretro/beetle-wswan-libretro,      branch: master,     dir: . }
           - { name: stella2014,       repo: libretro/stella2014-libretro,        branch: master,     dir: . }
           - { name: handy,            repo: libretro/libretro-handy,             branch: master,     dir: . }
-          # FBNeo pinned before "BurnArtwork" (17-18/11/2026): the artwork code
+          # FBNeo pinned to the libretro build of 17/11/2026, before "BurnArtwork": the artwork code
           # pulls in plutosvg, which needs sys/mman.h (absent on the Wii U)
-          - { name: fbneo,            repo: libretro/FBNeo,                      branch: master,     dir: src/burner/libretro, ref: 7f40ebb4b417aa55b6370469e05ed73ad38f1db4 }
+          - { name: fbneo,            repo: libretro/FBNeo,                      branch: master,     dir: src/burner/libretro, ref: e0ecdb11af563f31e698e590d69a85f087f528b3 }
           - { name: fbalpha2012,      repo: libretro/fbalpha2012,                branch: master,     dir: svn-current/trunk }
           - { name: mame2003_plus,    repo: libretro/mame2003-plus-libretro,     branch: master,     dir: . }
           - { name: prboom,           repo: libretro/libretro-prboom,            branch: master,     dir: . }
