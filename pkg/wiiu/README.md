@@ -178,6 +178,22 @@ make -f Makefile.wiiu HAVE_STATIC_DUMMY=1
 
 ---
 
+### Compilação automática (GitHub Actions)
+
+O workflow `.github/workflows/WiiU-Aroma.yml` faz tudo isso na nuvem, sem
+precisar de um PC com o devkitPro. Ele roda a cada push no branch
+`aroma-atual`, ou manualmente em **Actions → Wii U (Aroma) → Run workflow**.
+
+- Usa a imagem Docker `devkitpro/devkitppc` (devkitPPC + wut).
+- Baixa o PCSX do fork (branch `wiiu-aroma`), o FCEUmm e o Snes9x
+  oficiais, os `.info`, os `assets.zip` do menu e os `.rdb`.
+- O resultado fica em **Artifacts**: `RetroArch-WiiU-Aroma.zip`, já na
+  estrutura do cartão SD (sem BIOS nem ROMs), mais os `.elf` de cada núcleo.
+- Uma tag `wiiu-aroma-*` (por exemplo `wiiu-aroma-0.1`) publica o `.zip`
+  como *release* de teste (pré-lançamento).
+
+---
+
 ## 6. Log e depuração
 
 O RetroArch manda o log **pela rede (UDP, porta 4405)**, através do módulo de
