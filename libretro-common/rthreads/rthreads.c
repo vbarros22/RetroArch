@@ -1313,7 +1313,8 @@ static sthread_t *sthread_create_ex(void (*thread_func)(void*),
          prio = 31;
 
       thread->id = (OSThread*)block;
-      if (OSCreateThread(thread->id, thread_wrap, 0, (char*)data,
+      /* Cast: newer wut takes void* argv instead of const char** */
+      if (OSCreateThread(thread->id, (OSThreadEntryPointFn)(void*)thread_wrap, 0, (char*)data,
             block + sizeof(OSThread) + stack, stack, prio,
             OS_THREAD_ATTRIB_AFFINITY_ANY))
       {
