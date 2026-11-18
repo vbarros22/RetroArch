@@ -213,6 +213,25 @@ log em arquivo.
 
 ---
 
+## 6b. Compatibilidade testada (beta 0.2)
+
+| Sistema | Núcleo | Jogo | Resultado |
+|---|---|---|---|
+| WonderSwan | Beetle Cygne | Mega Man & Bass, Digimon Tamers | Perfeito (o cursor do menu Ozone sumiu depois de usar este núcleo) |
+| Neo Geo Pocket | Beetle NeoPop | Fatal Fury First Contact, Metal Slug 1st Mission | Perfeito |
+| GBA | VBA Next | Pokémon Emerald | Perfeito |
+| Game Boy Color | Gambatte, Gearboy | Pokémon Crystal | Perfeito |
+| Mega Drive | Genesis Plus GX, PicoDrive | Super Monaco GP, Streets of Rage 2 | Perfeito |
+| Master System | Genesis Plus GX, PicoDrive | Alex Kidd in Miracle World | Perfeito |
+| 32X | PicoDrive | Knuckles' Chaotix | Perfeito |
+| Mega-CD | Genesis Plus GX | Garou Densetsu Special | Perfeito (não abriu no PicoDrive) |
+| Famicom Disk System | Nestopia | Dracula II | Perfeito (no FCEUmm, `ERR 07` ao virar o disco: use Controle de disco → Ejetar, troque o lado, Inserir) |
+| PC Engine | Beetle PCE Fast | Out Run, Rondo of Blood | Sprites espelhados — corrigido em `core-patches/mednafen_pce_fast.patch` |
+| MSX | blueMSX | Vampire Killer, Metal Gear 1/2 | "Failed to load content": faltavam as pastas `Machines` e `Databases` em `system/` (agora vão no pacote) |
+| Neo Geo CD | FBNeo | Metal Slug 2 (.cue) | Travou — em investigação |
+
+---
+
 ## 7. Limitações conhecidas
 
 - **Threads desligadas** (`HAVE_THREADS ?= 0` no `Makefile.wiiu`), como no PR

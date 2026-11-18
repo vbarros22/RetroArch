@@ -65,10 +65,17 @@ jobs:
       run: |
         apt-get update
         apt-get install -y --no-install-recommends git ca-certificates
+    - uses: actions/checkout@v4
+      with:
+        path: RetroArch
+        sparse-checkout: pkg/wiiu/core-patches
     - name: Fetch ${{ matrix.name }}
       run: |
         git clone --depth 1 --recurse-submodules --shallow-submodules \
           -b "${{ matrix.branch }}" "https://github.com/${{ matrix.repo }}.git" src
+        # Wii U fixes not (yet) upstream: pkg/wiiu/core-patches/<name>.patch
+        P="$GITHUB_WORKSPACE/RetroArch/pkg/wiiu/core-patches/${{ matrix.name }}.patch"
+        if [ -f "$P" ]; then git -C src apply --verbose "$P"; fi
     - name: Build ${{ matrix.name }}
       run: |
         export PATH="$PATH:$DEVKITPRO/tools/bin:$DEVKITPPC/bin"
@@ -148,6 +155,11 @@ jobs:
             except Exception as e:
                 print("rdb missing:", n, e)
         PY
+        # blueMSX needs its Machines/ and Databases/ folders in system/
+        curl -fL -o bluemsx.zip "https://buildbot.libretro.com/assets/system/Blue%20Msx.zip" \
+          && unzip -o -q bluemsx.zip -d "$SD/retroarch/cores/system" \
+          || echo "WARNING: blueMSX system files not fetched"
+        ls "$SD/retroarch/cores/system"
         cp RetroArch/pkg/wiiu/README.md "$SD/LEIA-ME-WiiU.md"
         cp RetroArch/pkg/wiiu/escutar-log.ps1 "$SD/"
         echo "Coloque aqui as BIOS (veja LEIA-ME-WiiU.md)" > "$SD/retroarch/cores/system/BIOS-AQUI.txt"

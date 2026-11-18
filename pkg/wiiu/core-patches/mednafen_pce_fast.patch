@@ -1,0 +1,32 @@
+diff --git a/mednafen/pce_fast/vdc.c b/mednafen/pce_fast/vdc.c
+index 569a811..04f5c85 100644
+--- a/mednafen/pce_fast/vdc.c
++++ b/mednafen/pce_fast/vdc.c
+@@ -170,6 +170,13 @@ static INLINE void CheckFixSpriteTileCache(vdc_t *which_vdc, uint16 no, uint32 s
+                   | (vdc_spread8((uint8) bitplane1)       << 1);
+          uint64 hi = vdc_spread8((uint8)(bitplane0 >> 8))
+                   | (vdc_spread8((uint8)(bitplane1 >> 8)) << 1);
++#ifdef MSB_FIRST
++         /* pixel x lives in value byte x; on big-endian that is memory
++          * byte 7 - x, so swap before the byte-wise copy (sprites came out
++          * mirrored in 8-pixel halves on the Wii U) */
++         lo = __builtin_bswap64(lo);
++         hi = __builtin_bswap64(hi);
++#endif
+          memcpy(tc,     &lo, 8);
+          memcpy(tc + 8, &hi, 8);
+       }
+@@ -195,6 +202,13 @@ static INLINE void CheckFixSpriteTileCache(vdc_t *which_vdc, uint16 no, uint32 s
+                   | (vdc_spread8((uint8)(bitplane1 >> 8)) << 1)
+                   | (vdc_spread8((uint8)(bitplane2 >> 8)) << 2)
+                   | (vdc_spread8((uint8)(bitplane3 >> 8)) << 3);
++#ifdef MSB_FIRST
++         /* pixel x lives in value byte x; on big-endian that is memory
++          * byte 7 - x, so swap before the byte-wise copy (sprites came out
++          * mirrored in 8-pixel halves on the Wii U) */
++         lo = __builtin_bswap64(lo);
++         hi = __builtin_bswap64(hi);
++#endif
+          memcpy(tc,     &lo, 8);
+          memcpy(tc + 8, &hi, 8);
+       }
