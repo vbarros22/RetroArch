@@ -489,7 +489,7 @@ static void wiiu_hid_start_polling_thread(wiiu_hid_t *hid)
    retro_atomic_int_init(&hid->polling_thread_quit, 0);
 
    if (!OSCreateThread(thread,
-            wiiu_hid_polling_thread,
+            (OSThreadEntryPointFn)(void*)wiiu_hid_polling_thread,
             1, (char *)hid,
             stack+stack_size, stack_size,
             priority,

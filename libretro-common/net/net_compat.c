@@ -601,7 +601,7 @@ failure:
          return false;
 
       /* TODO port to rthreads */
-      if (!OSCreateThread(&net_compat_thread, net_compat_thread_entry,
+      if (!OSCreateThread(&net_compat_thread, (OSThreadEntryPointFn)(void*)net_compat_thread_entry,
             0, NULL, stack + 0x1000, 0x1000, 3,
             OS_THREAD_ATTRIB_AFFINITY_ANY))
       {
