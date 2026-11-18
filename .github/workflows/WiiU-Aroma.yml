@@ -54,9 +54,9 @@ jobs:
           - { name: mednafen_wswan,   repo: libretro/beetle-wswan-libretro,      branch: master,     dir: . }
           - { name: stella2014,       repo: libretro/stella2014-libretro,        branch: master,     dir: . }
           - { name: handy,            repo: libretro/libretro-handy,             branch: master,     dir: . }
-          # FBNeo pinned: on 18/11/2026 upstream added the plutosvg artwork lib to the
-          # libretro build, and it needs sys/mman.h (absent on the Wii U)
-          - { name: fbneo,            repo: libretro/FBNeo,                      branch: master,     dir: src/burner/libretro, ref: 54f5c540194bbfb46c844f9a0b4e73da700d0a41 }
+          # FBNeo pinned before "BurnArtwork" (17-18/11/2026): the artwork code
+          # pulls in plutosvg, which needs sys/mman.h (absent on the Wii U)
+          - { name: fbneo,            repo: libretro/FBNeo,                      branch: master,     dir: src/burner/libretro, ref: 7f40ebb4b417aa55b6370469e05ed73ad38f1db4 }
           - { name: fbalpha2012,      repo: libretro/fbalpha2012,                branch: master,     dir: svn-current/trunk }
           - { name: mame2003_plus,    repo: libretro/mame2003-plus-libretro,     branch: master,     dir: . }
           - { name: prboom,           repo: libretro/libretro-prboom,            branch: master,     dir: . }
@@ -168,8 +168,10 @@ jobs:
                 print("rdb missing:", n, e)
         PY
         # blueMSX needs its Machines/ and Databases/ folders in system/
-        curl -fL -o bluemsx.zip "https://buildbot.libretro.com/assets/system/Blue%20Msx.zip" \
-          && unzip -o -q bluemsx.zip -d "$SD/retroarch/cores/system" \
+        # (they ship in the core's own repo, under system/bluemsx/)
+        git clone -q --depth 1 https://github.com/libretro/blueMSX-libretro.git bluemsx-src \
+          && cp -r bluemsx-src/system/bluemsx/Databases bluemsx-src/system/bluemsx/Machines \
+                   "$SD/retroarch/cores/system/" \
           || echo "WARNING: blueMSX system files not fetched"
         ls "$SD/retroarch/cores/system"
         cp RetroArch/pkg/wiiu/README.md "$SD/LEIA-ME-WiiU.md"
