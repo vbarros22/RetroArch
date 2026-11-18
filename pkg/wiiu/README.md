@@ -146,7 +146,8 @@ As compilações rodam no shell MSYS2 do devkitPro. No PowerShell, use
   - `plugins/gpulib/gpu_async.c` (Threaded Rendering): barreira `sync` no
     PowerPC e registros `ex_regs` convertidos para little-endian.
   - `Makefile.libretro`: threads do Cafe OS (`rthreads`) para o desenho em
-    segundo plano; a thread de desenho vai para o núcleo 2.
+    segundo plano (núcleo 2) e para o som (*Threaded SPU*, núcleo 0;
+    `plugins/dfsound/spu.c` usa `OSSemaphore` no lugar dos semáforos POSIX).
 
 ### Passos
 
@@ -214,9 +215,20 @@ log em arquivo.
 - **PlayStation: dicas de desempenho.** Deixe o recompilador ligado
   (`pcsx_rearmed_drc = "enabled"`, padrão). Desligar o *dithering* e o vsync
   ajuda nos jogos mais pesados.
-- **Áudio do PlayStation.** O AX do Wii U agora toca 44100 Hz direto
-  (conversão de taxa feita pelo DSP), então use `audio_out_rate = "44100"` e
-  `audio_resampler = "cc"` no `retroarch.cfg` (com `nearest` o som piorou).
+- **Áudio do PlayStation.** O som só engasga quando o emulador não consegue
+  manter 60 fps (o gargalo é o processador). O que ajuda, já como padrão
+  nesta build:
+  - **Threaded SPU** (opção do núcleo, ligada por padrão no Wii U): a
+    mixagem do som roda no núcleo 0 do Wii U, longe da emulação.
+  - Controle dinâmico de taxa ligado (`audio_rate_control = "true"`): o PS1
+    (~59,83 Hz) e a TV (59,94 Hz) não andam juntos sem ele.
+  - Caminho de áudio em inteiros (`audio_fastpath_s16 = "true"`).
+  - O driver AX não informa mais `frames_consumed`: a estimativa de taxa da
+    saída (*Sink*) lia um jogo lento como saída lenta (−70% no Tekken 3) e
+    piorava os cortes.
+  - Use `audio_out_rate = "44100"` e `audio_resampler = "cc"`.
+  - Desligar o reverb do SPU alivia mais o processador, ao custo de um som
+    mais "seco".
 - **HD externo:** só partição **FAT32** é lida para ROMs. A partição no
   formato do Wii U não é lida.
 
@@ -236,5 +248,6 @@ Além do PR #14925 (port para wut/Aroma), este branch inclui:
 | Botões | A confirma e B volta por padrão (layout Nintendo) |
 | Opção HOME | "Allow Wii U HOME menu" no formato novo de opções (`settings/settings_def_input_wiiu_hbm.h`) |
 | Cloud sync | Só é ativada quando há threads (antes era ligada pelo sistema que compila) |
-| Áudio (AX) | Aceita taxas de 22050 a 48000 Hz: o DSP converte (`AXSetMultiVoiceSrcRatio`) |
+| Áudio (AX) | Aceita taxas de 22050 a 48000 Hz: o DSP converte (`AXSetMultiVoiceSrcRatio`); sem `frames_consumed` (estimativa de taxa) |
+| Áudio (padrões) | No Wii U, controle de taxa e caminho s16 ligados por padrão (`config.def.h`) |
 | Empacotamento | `wiiu-cores.sh` inclui os `.info` (`INFO_DIR`), usa `bsdtar` se faltar `unzip` e guarda o `.elf` de cada núcleo em `dist-scripts/elf/` (símbolos para ler endereços de travamentos) |

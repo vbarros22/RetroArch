@@ -1502,7 +1502,8 @@
 #endif
 
 /* Audio rate control. */
-#if !defined(RARCH_CONSOLE)
+#if !defined(RARCH_CONSOLE) || defined(WIIU)
+/* Wii U: the PS1 (~59.83 Hz) and the TV (59.94 Hz) drift apart without it */
 #define DEFAULT_RATE_CONTROL true
 #else
 #define DEFAULT_RATE_CONTROL false
@@ -1548,7 +1549,12 @@
  * (sinc, nearest, or CC) can be preferred over the float one for any
  * needed resampling, avoiding the s16<->float round-trip
  * (bit-reproducible). Opt-in; the float path remains the default. */
+#if defined(WIIU)
+/* Wii U: the CPU is the bottleneck; skip the s16<->float round-trip */
+#define DEFAULT_AUDIO_FASTPATH_S16 true
+#else
 #define DEFAULT_AUDIO_FASTPATH_S16 false
+#endif
 /* Requested output sample format for negotiable audio drivers:
  * AUDIO_FORMAT_NEGOTIATION_INT16 (0) or AUDIO_FORMAT_NEGOTIATION_FLOAT (1).
  * Float by default, matching RetroArch's historical driver behaviour. */

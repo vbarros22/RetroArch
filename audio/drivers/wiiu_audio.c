@@ -131,6 +131,7 @@ void wiiu_ax_callback(void)
  * The AX frame callback fires every 3 ms and takes AX_AUDIO_SAMPLE_COUNT
  * frames when the voice is running, so counting them counts device time
  * - JACK's shape rather than ALSA's, with no queue to subtract. */
+static size_t ax_audio_frames_consumed(void *data) __attribute__((unused));
 static size_t ax_audio_frames_consumed(void *data)
 {
    ax_audio_t *ax  = (ax_audio_t*)data;
@@ -475,6 +476,10 @@ audio_driver_t audio_ax =
    ax_audio_buffer_size,
    NULL, /* write_raw */
    ax_audio_wait_writable,
-   ax_audio_frames_consumed,
+   /* No frames_consumed: the AX clock is exact, and the count stops
+    * while the voice is stopped after an underrun, so the sink-rate
+    * estimator read a slow game as a slow device (-70% on Tekken 3)
+    * and starved the voice further. */
+   NULL, /* frames_consumed */
    ax_audio_underruns
 };
