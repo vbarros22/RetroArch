@@ -54,7 +54,9 @@ jobs:
           - { name: mednafen_wswan,   repo: libretro/beetle-wswan-libretro,      branch: master,     dir: . }
           - { name: stella2014,       repo: libretro/stella2014-libretro,        branch: master,     dir: . }
           - { name: handy,            repo: libretro/libretro-handy,             branch: master,     dir: . }
-          - { name: fbneo,            repo: libretro/FBNeo,                      branch: master,     dir: src/burner/libretro }
+          # FBNeo pinned: on 18/11/2026 upstream added the plutosvg artwork lib to the
+          # libretro build, and it needs sys/mman.h (absent on the Wii U)
+          - { name: fbneo,            repo: libretro/FBNeo,                      branch: master,     dir: src/burner/libretro, ref: 54f5c540194bbfb46c844f9a0b4e73da700d0a41 }
           - { name: fbalpha2012,      repo: libretro/fbalpha2012,                branch: master,     dir: svn-current/trunk }
           - { name: mame2003_plus,    repo: libretro/mame2003-plus-libretro,     branch: master,     dir: . }
           - { name: prboom,           repo: libretro/libretro-prboom,            branch: master,     dir: . }
@@ -71,8 +73,18 @@ jobs:
         sparse-checkout: pkg/wiiu/core-patches
     - name: Fetch ${{ matrix.name }}
       run: |
-        git clone --depth 1 --recurse-submodules --shallow-submodules \
-          -b "${{ matrix.branch }}" "https://github.com/${{ matrix.repo }}.git" src
+        URL="https://github.com/${{ matrix.repo }}.git"
+        if [ -n "${{ matrix.ref }}" ]; then
+          # pinned to a known-good commit
+          git init -q src
+          git -C src fetch -q --depth 1 "$URL" "${{ matrix.ref }}"
+          git -C src checkout -q FETCH_HEAD
+          git -C src submodule update -q --init --recursive --depth 1
+        else
+          git clone --depth 1 --recurse-submodules --shallow-submodules \
+            -b "${{ matrix.branch }}" "$URL" src
+        fi
+        git -C src log -1 --format="${{ matrix.name }} at %h (%cI) %s"
         # Wii U fixes not (yet) upstream: pkg/wiiu/core-patches/<name>.patch
         P="$GITHUB_WORKSPACE/RetroArch/pkg/wiiu/core-patches/${{ matrix.name }}.patch"
         if [ -f "$P" ]; then git -C src apply --verbose "$P"; fi
