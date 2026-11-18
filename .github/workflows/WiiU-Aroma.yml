@@ -96,4 +96,6 @@ jobs:
       uses: softprops/action-gh-release@v2
       with:
         files: RetroArch-WiiU-Aroma.zip
+        body_path: RetroArch/pkg/wiiu/RELEASE-NOTES.md
+        name: RetroArch Wii U (Aroma) ${{ github.ref_name }}
         prerelease: true
