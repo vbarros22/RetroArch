@@ -58,10 +58,11 @@ jobs:
           # pulls in plutosvg, which needs sys/mman.h (absent on the Wii U)
           # FBNeo: the full core (35 MB code + 89 MB data) is too big for the Wii U
           # loader and hangs before main, so ship upstream's driver subsets instead.
+          # A subset regenerates driverlist.h (REGEN_HEADERS=1: perl + host gcc).
           # Pinned to the libretro build of 17/11/2026, before "BurnArtwork" (its
           # plutosvg dependency needs sys/mman.h, absent on the Wii U).
-          - { name: fbneo_neogeo,     repo: libretro/FBNeo,                      branch: master,     dir: src/burner/libretro, ref: e0ecdb11af563f31e698e590d69a85f087f528b3, args: 'SUBSET=neogeo' }
-          - { name: fbneo_cps12,      repo: libretro/FBNeo,                      branch: master,     dir: src/burner/libretro, ref: e0ecdb11af563f31e698e590d69a85f087f528b3, args: 'SUBSET=cps12' }
+          - { name: fbneo_neogeo,     repo: libretro/FBNeo,                      branch: master,     dir: src/burner/libretro, ref: e0ecdb11af563f31e698e590d69a85f087f528b3, args: 'SUBSET=neogeo REGEN_HEADERS=1' }
+          - { name: fbneo_cps12,      repo: libretro/FBNeo,                      branch: master,     dir: src/burner/libretro, ref: e0ecdb11af563f31e698e590d69a85f087f528b3, args: 'SUBSET=cps12 REGEN_HEADERS=1' }
           - { name: fbalpha2012,      repo: libretro/fbalpha2012,                branch: master,     dir: svn-current/trunk }
           - { name: mame2003_plus,    repo: libretro/mame2003-plus-libretro,     branch: master,     dir: . }
           - { name: prboom,           repo: libretro/libretro-prboom,            branch: master,     dir: . }
@@ -72,6 +73,8 @@ jobs:
       run: |
         apt-get update
         apt-get install -y --no-install-recommends git ca-certificates
+        case "${{ matrix.args }}" in *REGEN_HEADERS*) \
+          apt-get install -y --no-install-recommends perl gcc g++ libc6-dev ;; esac
     - uses: actions/checkout@v4
       with:
         path: RetroArch
