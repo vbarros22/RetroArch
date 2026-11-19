@@ -231,7 +231,10 @@ log em arquivo.
 | Arcade | FB Alpha 2012 | Marvel Super Heroes | Perfeito |
 | Arcade | MAME 2003-Plus | Mortal Kombat | Perfeito |
 | Arcade | MAME 2003-Plus | Killer Instinct | Pede arquivos que faltam: precisa do CHD do disco rígido e do romset 0.78 |
-| Arcade / Neo Geo CD | **FBNeo** | — | **Trava ao carregar o núcleo**, antes de qualquer log: 35 MB de código + 89 MB de dados, grande demais para o carregador do Wii U (o MAME 2003-Plus, com 16 + 41 MB, abre). Fica fora do beta até sair uma versão menor |
+| Arcade | FBNeo (completo) | — | Trava ao carregar (124 MB, grande demais para o Wii U); substituído pelas versões abaixo |
+| Neo Geo | FBNeo (Neo-Geo) | Metal Slug 2 | Perfeito |
+| CPS-1 / CPS-2 | FBNeo (CPS-1 / CPS-2) | — | Abre (o teste usou o romset errado) |
+| Neo Geo CD | FBNeo (Neo-Geo) | Metal Slug | Roda; a música de CD saía estourada (bytes trocados em big-endian) — corrigido em `core-patches/fbneo_neogeo.patch` |
 | PC Engine | Beetle PCE Fast | Out Run, Rondo of Blood | Perfeito (os sprites saíam espelhados; corrigido em `core-patches/mednafen_pce_fast.patch`) |
 
 ---

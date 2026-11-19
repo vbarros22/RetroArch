@@ -1,0 +1,21 @@
+diff --git a/src/intf/cd/cd_img.inc b/src/intf/cd/cd_img.inc
+index 0014b0f..2137f26 100644
+--- a/src/intf/cd/cd_img.inc
++++ b/src/intf/cd/cd_img.inc
+@@ -1913,6 +1913,16 @@ static INT32 cdimgGetSoundBuffer(INT16* buffer, INT32 samples)
+ 				cdimgStop();
+ 				break;
+ 			}
++#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
++			// .bin/.img audio is little-endian 16-bit; on big-endian hosts
++			// (Wii U) swap it, or CD music comes out as loud noise. The .chd
++			// path above already assembles native samples.
++			if (cdimgTOC->ImageType != CD_TYPE_CHD) {
++				UINT16* s = (UINT16*)cdimgOutputbuffer;
++				for (INT32 i = 0; i < cdimgOutputbufferSize * 2; i++)
++					s[i] = (UINT16)((s[i] >> 8) | (s[i] << 8));
++			}
++#endif
+ 		}
+ 
+ 		INT32 count = cdimgOutputbufferSize - cdimgOutputPosition;
