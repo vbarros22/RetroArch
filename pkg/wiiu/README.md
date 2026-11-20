@@ -234,7 +234,7 @@ log em arquivo.
 | Arcade | FBNeo (completo) | — | Trava ao carregar (124 MB, grande demais para o Wii U); substituído pelas versões abaixo |
 | Neo Geo | FBNeo (Neo-Geo) | Metal Slug 2 | Perfeito |
 | CPS-1 / CPS-2 | FBNeo (CPS-1 / CPS-2) | — | Abre (o teste usou o romset errado) |
-| Neo Geo CD | FBNeo (Neo-Geo) | Metal Slug | Roda; a música de CD saía estourada (bytes trocados em big-endian) — corrigido em `core-patches/fbneo_neogeo.patch` |
+| Neo Geo CD | FBNeo (Neo-Geo) | Metal Slug | Perfeito (a música de CD saía estourada por bytes trocados em big-endian; corrigido em `core-patches/fbneo_neogeo.patch`). Jogo em bin/cue de arquivo único, na pasta `neocd` |
 | PC Engine | Beetle PCE Fast | Out Run, Rondo of Blood | Perfeito (os sprites saíam espelhados; corrigido em `core-patches/mednafen_pce_fast.patch`) |
 
 ---
