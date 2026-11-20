@@ -137,6 +137,11 @@ typedef struct
    GX2_vec2 *ubo_vp;
    GX2_vec2 *ubo_tex;
    GX2_mat4x4 *ubo_mvp;
+   /* Screen-space MVP for the menu/display quads: never rotated, unlike
+    * ubo_mvp, which follows the core's rotation (vertical arcade games,
+    * WonderSwan). Drawing the menu with ubo_mvp left the Ozone/XMB
+    * selection bars misplaced after such a game. */
+   GX2_mat4x4 *ubo_mvp_menu;
    void *input_ring_buffer;
    void *output_ring_buffer;
    u32 input_ring_buffer_size;
@@ -508,7 +513,7 @@ static void gfx_display_wiiu_draw(gfx_display_ctx_draw_t *draw,
       GX2SetShader(&tex_shader);
       GX2SetVertexUniformBlock(tex_shader.vs.uniformBlocks[0].offset,
             tex_shader.vs.uniformBlocks[0].size,
-            wiiu->ubo_mvp);
+            wiiu->ubo_mvp_menu);
       GX2SetAttribBuffer(0, wiiu->vertex_cache_tex.size * sizeof(*wiiu->vertex_cache_tex.v),
             sizeof(*wiiu->vertex_cache_tex.v), wiiu->vertex_cache_tex.v);
 
@@ -1417,6 +1422,10 @@ static void *gx2_init(const video_info_t *video)
    GX2Invalidate(GX2_INVALIDATE_MODE_CPU | GX2_INVALIDATE_MODE_UNIFORM_BLOCK, wiiu->ubo_tex, sizeof(*wiiu->ubo_tex));
 
    wiiu->ubo_mvp                      = MEM1_alloc(sizeof(*wiiu->ubo_mvp), GX2_UNIFORM_BLOCK_ALIGNMENT);
+   wiiu->ubo_mvp_menu                 = MEM1_alloc(sizeof(*wiiu->ubo_mvp_menu), GX2_UNIFORM_BLOCK_ALIGNMENT);
+   matrix_4x4_ortho((*wiiu->ubo_mvp_menu), 0, 1, 1, 0, -1, 1);
+   GX2Invalidate(GX2_INVALIDATE_MODE_CPU | GX2_INVALIDATE_MODE_UNIFORM_BLOCK,
+         wiiu->ubo_mvp_menu, sizeof(*wiiu->ubo_mvp_menu));
    gx2_set_projection(wiiu);
 
    wiiu->input_ring_buffer_size       = GX2CalcGeometryShaderInputRingBufferSize(
@@ -2067,6 +2076,7 @@ static void gx2_free(void *data)
    MEM1_free(wiiu->ubo_vp);
    MEM1_free(wiiu->ubo_tex);
    MEM1_free(wiiu->ubo_mvp);
+   MEM1_free(wiiu->ubo_mvp_menu);
    MEM1_free(wiiu->input_ring_buffer);
    MEM1_free(wiiu->output_ring_buffer);
 
