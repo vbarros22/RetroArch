@@ -217,7 +217,7 @@ log em arquivo.
 
 | Sistema | Núcleo | Jogo | Resultado |
 |---|---|---|---|
-| WonderSwan | Beetle Cygne | Mega Man & Bass, Digimon Tamers | Perfeito (o cursor do menu Ozone sumiu depois de usar este núcleo) |
+| WonderSwan | Beetle Cygne | Mega Man & Bass, Digimon Tamers | Perfeito (a faixa de seleção do menu saía do lugar depois de jogos com tela girada; corrigido no `gx2_gfx.c`) |
 | Neo Geo Pocket | Beetle NeoPop | Fatal Fury First Contact, Metal Slug 1st Mission | Perfeito |
 | GBA | VBA Next | Pokémon Emerald | Perfeito |
 | Game Boy Color | Gambatte, Gearboy | Pokémon Crystal | Perfeito |

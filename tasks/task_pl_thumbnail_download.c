@@ -276,6 +276,7 @@ void cb_http_task_download_pl_thumbnail(
    http_transfer_data_t *data  = (http_transfer_data_t*)task_data;
    file_transfer_t *transf     = (file_transfer_t*)user_data;
    pl_thumb_handle_t *pl_thumb = NULL;
+   char status_msg[64];
 
    /* Update pl_thumb task status
     * > Do this first, to minimise the risk of hanging
@@ -302,7 +303,11 @@ void cb_http_task_download_pl_thumbnail(
    /* Skip if data can't be good */
    if (data->status != 200)
    {
-      err = "File not found.";
+      /* Say which status came back: 404 means the server has no such
+       * image, anything else (0, 3xx, 5xx) a transport problem. */
+      snprintf(status_msg, sizeof(status_msg),
+            "File not found (HTTP status %d).", data->status);
+      err = status_msg;
       goto finish;
    }
 
@@ -377,6 +382,7 @@ static void download_pl_thumbnail(pl_thumb_handle_t *pl_thumb)
 
          /* ...if it does fail, however, we can immediately
           * signal that the task is 'complete' */
+         RARCH_DBG("[Thumbnail] Fetching \"%s\".\n", url);
          if (!(pl_thumb->http_task = (retro_task_t*)task_push_http_download_file(
                url, transf->path, true, NULL,
                cb_http_task_download_pl_thumbnail, transf)))
