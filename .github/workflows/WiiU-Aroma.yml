@@ -41,7 +41,9 @@ jobs:
           # New in 0.2 (need testing on hardware)
           - { name: genesis_plus_gx,  repo: libretro/Genesis-Plus-GX,            branch: master,     dir: . }
           - { name: picodrive,        repo: libretro/picodrive,                  branch: master,     dir: . }
-          # mgba: upstream dropped its libretro Makefile (CMake only now); to do
+          # mGBA pinned to the last libretro commit with Makefile.libretro (3/8/2026);
+          # later ones build with CMake only
+          - { name: mgba,             repo: libretro/mgba,                       branch: master,     dir: ., ref: 517e518c48e351def04042dc159064dd098830a9 }
           - { name: vba_next,         repo: libretro/vba-next,                   branch: master,     dir: . }
           - { name: gambatte,         repo: libretro/gambatte-libretro,          branch: master,     dir: . }
           - { name: gearboy,          repo: libretro/Gearboy,                    branch: master,     dir: platforms/libretro, args: 'CC=powerpc-eabi-gcc CXX=powerpc-eabi-g++ AR=powerpc-eabi-ar' }
