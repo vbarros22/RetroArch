@@ -504,7 +504,10 @@ static void gfx_display_wiiu_draw(gfx_display_ctx_draw_t *draw,
    else if (draw->coords->vertex || draw->coords->color[0] != draw->coords->color[12])
    {
       int i;
-      if (wiiu->vertex_cache_tex.current + 4 > wiiu->vertex_cache_tex.size)
+      /* A strip may carry more than one quad (nine-slice cursors) */
+      unsigned n = (draw->coords->vertex && draw->coords->vertices > 4)
+            ? draw->coords->vertices : 4;
+      if (wiiu->vertex_cache_tex.current + n > wiiu->vertex_cache_tex.size)
          return;
 
       tex_shader_vertex_t* v = wiiu->vertex_cache_tex.v + wiiu->vertex_cache_tex.current;
@@ -539,14 +542,11 @@ static void gfx_display_wiiu_draw(gfx_display_ctx_draw_t *draw,
       }
       else
       {
-         v[0].pos.x   = draw->coords->vertex[0];
-         v[0].pos.y   = 1.0 - draw->coords->vertex[1];
-         v[1].pos.x   = draw->coords->vertex[2];
-         v[1].pos.y   = 1.0 - draw->coords->vertex[3];
-         v[2].pos.x   = draw->coords->vertex[4];
-         v[2].pos.y   = 1.0 - draw->coords->vertex[5];
-         v[3].pos.x   = draw->coords->vertex[6];
-         v[3].pos.y   = 1.0 - draw->coords->vertex[7];
+         for (i = 0; i < (int)n; i++)
+         {
+            v[i].pos.x = draw->coords->vertex[(i << 1) + 0];
+            v[i].pos.y = 1.0 - draw->coords->vertex[(i << 1) + 1];
+         }
       }
 
       if (!draw->coords->tex_coord)
@@ -562,17 +562,14 @@ static void gfx_display_wiiu_draw(gfx_display_ctx_draw_t *draw,
       }
       else
       {
-         v[0].coord.u = draw->coords->tex_coord[0];
-         v[0].coord.v = draw->coords->tex_coord[1];
-         v[1].coord.u = draw->coords->tex_coord[2];
-         v[1].coord.v = draw->coords->tex_coord[3];
-         v[2].coord.u = draw->coords->tex_coord[4];
-         v[2].coord.v = draw->coords->tex_coord[5];
-         v[3].coord.u = draw->coords->tex_coord[6];
-         v[3].coord.v = draw->coords->tex_coord[7];
+         for (i = 0; i < (int)n; i++)
+         {
+            v[i].coord.u = draw->coords->tex_coord[(i << 1) + 0];
+            v[i].coord.v = draw->coords->tex_coord[(i << 1) + 1];
+         }
       }
 
-      for (i = 0; i < 4; i++)
+      for (i = 0; i < (int)n; i++)
       {
          v[i].color.r = draw->coords->color[(i << 2) + 0];
          v[i].color.g = draw->coords->color[(i << 2) + 1];
@@ -584,8 +581,8 @@ static void gfx_display_wiiu_draw(gfx_display_ctx_draw_t *draw,
             ? (GX2Texture*)draw->texture : wiiu->white_texture,
             tex_shader.ps.samplerVars[0].location);
 
-      GX2DrawEx(GX2_PRIMITIVE_MODE_TRIANGLE_STRIP, 4, wiiu->vertex_cache_tex.current, 1);
-      wiiu->vertex_cache_tex.current += 4;
+      GX2DrawEx(GX2_PRIMITIVE_MODE_TRIANGLE_STRIP, n, wiiu->vertex_cache_tex.current, 1);
+      wiiu->vertex_cache_tex.current += n;
    }
    else
    {
