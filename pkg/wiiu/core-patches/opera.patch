@@ -1,0 +1,22 @@
+diff --git a/Makefile b/Makefile
+index ceb0d8e..244bfe8 100644
+--- a/Makefile
++++ b/Makefile
+@@ -236,6 +236,17 @@ else ifeq ($(platform), sncps3)
+    FLAGS += -DMSB_FIRST
+    NO_GCC = 1
+ 
++# Nintendo Wii U
++else ifeq ($(platform), wiiu)
++   TARGET := $(TARGET_NAME)_libretro_$(platform).a
++   CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
++   AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
++   STATIC_LINKING = 1
++   THREADED_DSP = 0
++   FLAGS += -DMSB_FIRST -DGEKKO -DWIIU -DHW_RVL -mcpu=750 -meabi -mhard-float
++   FLAGS += -ffunction-sections -fdata-sections
++   FLAGS += -U__INT32_TYPE__ -U__UINT32_TYPE__ -D__INT32_TYPE__=int
++
+ # PSP1
+ else ifeq ($(platform), psp1)
+    TARGET := $(TARGET_NAME)_libretro_$(platform).a
