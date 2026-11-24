@@ -220,6 +220,7 @@ log em arquivo.
 | WonderSwan | Beetle Cygne | Mega Man & Bass, Digimon Tamers | Perfeito (a faixa de seleção do menu saía do lugar depois de jogos com tela girada; corrigido no `gx2_gfx.c`) |
 | Neo Geo Pocket | Beetle NeoPop | Fatal Fury First Contact, Metal Slug 1st Mission | Perfeito |
 | GBA | VBA Next | Pokémon Emerald | Perfeito |
+| GBA / Game Boy / Color | mGBA | Pokémon Emerald, Pokémon Crystal | Perfeito |
 | Game Boy Color | Gambatte, Gearboy | Pokémon Crystal | Perfeito |
 | Mega Drive | Genesis Plus GX, PicoDrive | Super Monaco GP, Streets of Rage 2 | Perfeito |
 | Master System | Genesis Plus GX, PicoDrive | Alex Kidd in Miracle World | Perfeito |

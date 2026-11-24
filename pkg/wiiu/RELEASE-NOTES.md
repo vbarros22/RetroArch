@@ -27,7 +27,7 @@ Full guide (Portuguese): `LEIA-ME-WiiU.md` in the zip.
 - The menu selection bar no longer drifts after games with a rotated screen (WonderSwan, vertical arcade).
   *A faixa de seleção do menu não sai mais do lugar depois de jogos com tela girada.*
 
-### Cores included / Núcleos incluídos (23)
+### Cores included / Núcleos incluídos (24)
 | System | Core | Tested on hardware |
 |---|---|---|
 | NES / Famicom Disk System | FCEUmm, Nestopia | ✅ (FDS: use Nestopia) |
@@ -35,7 +35,7 @@ Full guide (Portuguese): `LEIA-ME-WiiU.md` in the zip.
 | PlayStation | PCSX ReARMed (Lightrec) | ✅ most games 50–60 fps |
 | Mega Drive / Master System / 32X / Mega-CD | Genesis Plus GX, PicoDrive | ✅ |
 | Game Boy / Color | Gambatte, Gearboy | ✅ |
-| Game Boy Advance | VBA Next | ✅ |
+| Game Boy Advance | VBA Next, mGBA | ✅ |
 | PC Engine / CD | Beetle PCE Fast | ✅ |
 | WonderSwan / Color | Beetle Cygne | ✅ |
 | Neo Geo Pocket / Color | Beetle NeoPop | ✅ |
