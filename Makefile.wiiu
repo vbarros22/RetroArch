@@ -176,6 +176,10 @@ endif
       HAVE_RGUI = 1
       HAVE_7ZIP = 1
       HAVE_RZSTD = 1
+      # CHD for the scanner and CD-image tasks (the cores read it themselves)
+      HAVE_CHD = 1
+      HAVE_RCHD = 1
+      HAVE_RFLAC = 1
       HAVE_LIBRETRODB = 1
       HAVE_MATERIALUI = 1
       HAVE_XMB = 1
