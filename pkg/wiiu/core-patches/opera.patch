@@ -1,8 +1,8 @@
 diff --git a/Makefile b/Makefile
-index ceb0d8e..97e6af3 100644
+index ceb0d8e..9f3d716 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -236,6 +236,18 @@ else ifeq ($(platform), sncps3)
+@@ -236,6 +236,20 @@ else ifeq ($(platform), sncps3)
     FLAGS += -DMSB_FIRST
     NO_GCC = 1
  
@@ -15,9 +15,30 @@ index ceb0d8e..97e6af3 100644
 +   THREADED_DSP = 0
 +   # no GEKKO/WIIU: they pull libogc and RetroArch headers into libretro-common
 +   FLAGS += -DMSB_FIRST -mcpu=750 -meabi -mhard-float
++   # the frontend's file_stream predates filestream_map/filestream_volume
++   FLAGS += -DOPERA_NO_FILESTREAM_MAP
 +   FLAGS += -ffunction-sections -fdata-sections
 +   FLAGS += -U__INT32_TYPE__ -U__UINT32_TYPE__ -D__INT32_TYPE__=int
 +
  # PSP1
  else ifeq ($(platform), psp1)
     TARGET := $(TARGET_NAME)_libretro_$(platform).a
+diff --git a/retro_cdimage.c b/retro_cdimage.c
+index 8734be4..a479a03 100644
+--- a/retro_cdimage.c
++++ b/retro_cdimage.c
+@@ -514,12 +514,14 @@ retro_cdimage_open_chd(const char *path_,
+     /* A removable or network drive can fail a touch of the mapping,
+      * which faults where a read would only fail: those are read. The
+      * kind is told on Windows; elsewhere it is not, and maps as before. */
++#ifndef OPERA_NO_FILESTREAM_MAP
+     if(!filestream_volume(state->source,RETRO_VFS_VOLUME_WANT_KIND,&vol) ||
+        ((vol.kind != RETRO_VFS_VOLUME_REMOVABLE) &&
+         (vol.kind != RETRO_VFS_VOLUME_REMOTE)))
+       /* Local, or lent by a v7 frontend's VFS; NULL under an older one,
+        * which leaves the reads below */
+       state->mapped = filestream_map(state->source,&mapped_len);
++#endif
+     if((state->mapped != NULL) && (mapped_len < size))
+       state->mapped = NULL;
+   }
