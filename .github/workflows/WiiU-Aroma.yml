@@ -69,8 +69,9 @@ jobs:
           - { name: mame2003_plus,    repo: libretro/mame2003-plus-libretro,     branch: master,     dir: . }
           - { name: prboom,           repo: libretro/libretro-prboom,            branch: master,     dir: . }
           - { name: nxengine,         repo: libretro/nxengine-libretro,          branch: master,     dir: . }
-          # 3DO: Opera has no Wii U target upstream; core-patches/opera.patch adds one
-          - { name: opera,            repo: libretro/opera-libretro,             branch: master,     dir: . }
+          # 3DO (Opera) left out: it builds and links (core-patches/opera.patch), but
+          # its big-endian path is incomplete and every game, BIOS included, stays black
+          # - { name: opera,            repo: libretro/opera-libretro,             branch: master,     dir: . }
           - { name: bluemsx,          repo: libretro/blueMSX-libretro,           branch: master,     dir: . }
     steps:
     - name: Tools
