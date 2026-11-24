@@ -1,0 +1,15 @@
+diff --git a/libretro/libretro.c b/libretro/libretro.c
+index 91efcf2..b73f0a8 100644
+--- a/libretro/libretro.c
++++ b/libretro/libretro.c
+@@ -3717,6 +3717,10 @@ void retro_unload_game(void)
+    if (system_hw == SYSTEM_MCD)
+       bram_save();
+ 
++   /* Close the disc image: an open file left on the SD card hangs the
++    * Wii U when the process exits */
++   cdd_unload();
++
+    audio_shutdown();
+ 
+    if (md_ntsc)

@@ -72,6 +72,34 @@ jobs:
           # 3DO (Opera) left out: it builds and links (core-patches/opera.patch), but
           # its big-endian path is incomplete and every game, BIOS included, stays black
           # - { name: opera,            repo: libretro/opera-libretro,             branch: master,     dir: . }
+          # Batch from the cores Ploggy's build ships (need testing on hardware)
+          - { name: gpsp,                repo: libretro/gpsp,                           branch: master,     dir: . }
+          - { name: gearsystem,          repo: drhelius/Gearsystem,                     branch: master,     dir: platforms/libretro, args: 'CC=powerpc-eabi-gcc CXX=powerpc-eabi-g++ AR=powerpc-eabi-ar' }
+          - { name: gearcoleco,          repo: drhelius/Gearcoleco,                     branch: master,     dir: platforms/libretro, args: 'CC=powerpc-eabi-gcc CXX=powerpc-eabi-g++ AR=powerpc-eabi-ar' }
+          - { name: quicknes,            repo: libretro/QuickNES_Core,                  branch: master,     dir: . }
+          - { name: snes9x2002,          repo: libretro/snes9x2002,                     branch: master,     dir: . }
+          - { name: snes9x2005,          repo: libretro/snes9x2005,                     branch: master,     dir: . }
+          - { name: snes9x2005_plus,     repo: libretro/snes9x2005,                     branch: master,     dir: ., args: 'USE_BLARGG_APU=1' }
+          - { name: stella2023,          repo: libretro/stella2023,                     branch: master,     dir: . }
+          - { name: prosystem,           repo: libretro/prosystem-libretro,             branch: master,     dir: . }
+          - { name: a5200,               repo: libretro/a5200,                          branch: master,     dir: . }
+          - { name: atari800,            repo: libretro/libretro-atari800,              branch: master,     dir: . }
+          - { name: vecx,                repo: libretro/libretro-vecx,                  branch: master,     dir: . }
+          - { name: o2em,                repo: libretro/libretro-o2em,                  branch: master,     dir: . }
+          - { name: freeintv,            repo: libretro/FreeIntv,                       branch: master,     dir: . }
+          - { name: pokemini,            repo: libretro/PokeMini,                       branch: master,     dir: . }
+          - { name: race,                repo: libretro/RACE,                           branch: master,     dir: . }
+          - { name: mednafen_pce,        repo: libretro/beetle-pce-libretro,            branch: master,     dir: . }
+          - { name: mednafen_supergrafx, repo: libretro/beetle-supergrafx-libretro,     branch: master,     dir: . }
+          - { name: mednafen_lynx,       repo: libretro/beetle-lynx-libretro,           branch: master,     dir: . }
+          - { name: neocd,               repo: libretro/neocd_libretro,                 branch: master,     dir: . }
+          - { name: geolith,             repo: libretro/geolith-libretro,               branch: master,     dir: libretro }
+          - { name: mame2000,            repo: libretro/mame2000-libretro,              branch: master,     dir: . }
+          - { name: mame2003_midway,     repo: libretro/mame2003_midway,                branch: master,     dir: . }
+          - { name: genesis_plus_gx_wide, repo: libretro/Genesis-Plus-GX-Wide,           branch: master,     dir: . }
+          - { name: fbalpha2012_cps1,    repo: libretro/fbalpha2012_cps1,               branch: master,     dir: . }
+          - { name: fbalpha2012_cps2,    repo: libretro/fbalpha2012_cps2,               branch: master,     dir: . }
+          - { name: fbalpha2012_neogeo,  repo: libretro/fbalpha2012_neogeo,             branch: master,     dir: . }
           - { name: bluemsx,          repo: libretro/blueMSX-libretro,           branch: master,     dir: . }
     steps:
     - name: Tools
