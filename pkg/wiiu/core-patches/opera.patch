@@ -1,8 +1,8 @@
 diff --git a/Makefile b/Makefile
-index ceb0d8e..244bfe8 100644
+index ceb0d8e..97e6af3 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -236,6 +236,17 @@ else ifeq ($(platform), sncps3)
+@@ -236,6 +236,18 @@ else ifeq ($(platform), sncps3)
     FLAGS += -DMSB_FIRST
     NO_GCC = 1
  
@@ -13,7 +13,8 @@ index ceb0d8e..244bfe8 100644
 +   AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
 +   STATIC_LINKING = 1
 +   THREADED_DSP = 0
-+   FLAGS += -DMSB_FIRST -DGEKKO -DWIIU -DHW_RVL -mcpu=750 -meabi -mhard-float
++   # no GEKKO/WIIU: they pull libogc and RetroArch headers into libretro-common
++   FLAGS += -DMSB_FIRST -mcpu=750 -meabi -mhard-float
 +   FLAGS += -ffunction-sections -fdata-sections
 +   FLAGS += -U__INT32_TYPE__ -U__UINT32_TYPE__ -D__INT32_TYPE__=int
 +
