@@ -224,7 +224,7 @@ log em arquivo.
 | Mega Drive | Genesis Plus GX, PicoDrive | Super Monaco GP, Streets of Rage 2 | Perfeito |
 | Master System | Genesis Plus GX, PicoDrive | Alex Kidd in Miracle World | Perfeito |
 | 32X | PicoDrive | Knuckles' Chaotix | Perfeito |
-| Mega-CD | Genesis Plus GX, PicoDrive | Garou Densetsu Special (CHD) | Perfeito. O Genesis Plus GX abre na hora; o PicoDrive demora mais para ler o CHD |
+| Mega-CD | Genesis Plus GX, PicoDrive | Garou Densetsu Special (CHD) | Perfeito. O Genesis Plus GX abre na hora; o PicoDrive demora mais para ler o CHD. Sair pelo HOME travava no Genesis Plus GX, que deixava a imagem do CD aberta; corrigido em `core-patches/genesis_plus_gx.patch` |
 | Famicom Disk System | Nestopia | Dracula II | Perfeito (no FCEUmm, `ERR 07` ao virar o disco: use Controle de disco → Ejetar, troque o lado, Inserir) |
 | MSX / MSX2 | blueMSX | Vampire Killer, Metal Gear 1 e 2 | Perfeito (precisa de `Machines` e `Databases` em `system/`, que já vão no pacote) |
 | Arcade | FB Alpha 2012 | Marvel Super Heroes | Perfeito |
@@ -302,4 +302,5 @@ Além do PR #14925 (port para wut/Aroma), este branch inclui:
 | Vídeo (GX2) | O driver desenha todos os vértices de um bloco (cursor em 9 pedaços, retângulos agrupados): o Ozone perdia as caixas de seleção e mostrava um "[" no canto |
 | Laço principal | Checa a fila de tarefas a cada quadro: "Fechar conteúdo" travava até apertar botões |
 | Miniaturas | O erro de download mostra o código HTTP |
+| Genesis Plus GX | Fecha a imagem do CD ao descarregar o jogo: sair pelo HOME depois de um jogo de Mega-CD travava o console (`core-patches/genesis_plus_gx.patch`) |
 | Empacotamento | `wiiu-cores.sh` inclui os `.info` (`INFO_DIR`), usa `bsdtar` se faltar `unzip` e guarda o `.elf` de cada núcleo em `dist-scripts/elf/` (símbolos para ler endereços de travamentos) |
