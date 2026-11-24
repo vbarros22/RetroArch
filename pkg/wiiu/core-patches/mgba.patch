@@ -1,0 +1,13 @@
+diff --git a/Makefile.libretro b/Makefile.libretro
+index 06fad52..77192cc 100644
+--- a/Makefile.libretro
++++ b/Makefile.libretro
+@@ -344,7 +344,7 @@ else ifneq (,$(filter $(platform), ngc wii wiiu))
+ 
+    # Nintendo WiiU
+    ifneq (,$(findstring wiiu,$(platform)))
+-      PLATFORM_DEFINES += -DWIIU -DHW_RVL -mwup
++      PLATFORM_DEFINES += -DWIIU -DHW_RVL
+ 
+    # Nintendo Wii
+    else ifneq (,$(findstring wii,$(platform)))
