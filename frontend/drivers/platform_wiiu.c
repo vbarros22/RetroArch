@@ -657,6 +657,9 @@ static void main_loop(void)
             task_queue_wait(NULL, NULL);
 
          status = runloop_iterate();
+         /* As every frame loop does: the wait above may return with
+          * finished tasks unretired, stalling a staged content load */
+         task_queue_check();
          if (status == -1)
          {
             /* RetroArch requested core switch or exit */
