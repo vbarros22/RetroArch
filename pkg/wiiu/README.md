@@ -213,7 +213,7 @@ log em arquivo.
 
 ---
 
-## 6b. Compatibilidade testada (beta 0.2)
+## 6b. Compatibilidade testada
 
 | Sistema | Núcleo | Jogo | Resultado |
 |---|---|---|---|
@@ -224,10 +224,9 @@ log em arquivo.
 | Mega Drive | Genesis Plus GX, PicoDrive | Super Monaco GP, Streets of Rage 2 | Perfeito |
 | Master System | Genesis Plus GX, PicoDrive | Alex Kidd in Miracle World | Perfeito |
 | 32X | PicoDrive | Knuckles' Chaotix | Perfeito |
-| Mega-CD | Genesis Plus GX | Garou Densetsu Special | Perfeito (não abriu no PicoDrive) |
+| Mega-CD | Genesis Plus GX, PicoDrive | Garou Densetsu Special (CHD) | Perfeito. O Genesis Plus GX abre na hora; o PicoDrive demora mais para ler o CHD |
 | Famicom Disk System | Nestopia | Dracula II | Perfeito (no FCEUmm, `ERR 07` ao virar o disco: use Controle de disco → Ejetar, troque o lado, Inserir) |
-| MSX | blueMSX | Vampire Killer, Metal Gear 1/2 | "Failed to load content": faltavam as pastas `Machines` e `Databases` em `system/` (agora vão no pacote) |
-| MSX / MSX2 | blueMSX | Vampire Killer, Metal Gear 1 e 2 | Perfeito (com `Machines` e `Databases` em `system/`) |
+| MSX / MSX2 | blueMSX | Vampire Killer, Metal Gear 1 e 2 | Perfeito (precisa de `Machines` e `Databases` em `system/`, que já vão no pacote) |
 | Arcade | FB Alpha 2012 | Marvel Super Heroes | Perfeito |
 | Arcade | MAME 2003-Plus | Mortal Kombat | Perfeito |
 | Arcade | MAME 2003-Plus | Killer Instinct | Pede arquivos que faltam: precisa do CHD do disco rígido e do romset 0.78 |
@@ -236,6 +235,13 @@ log em arquivo.
 | CPS-1 / CPS-2 | FBNeo (CPS-1 / CPS-2) | — | Abre (o teste usou o romset errado) |
 | Neo Geo CD | FBNeo (Neo-Geo) | Metal Slug | Perfeito (a música de CD saía estourada por bytes trocados em big-endian; corrigido em `core-patches/fbneo_neogeo.patch`). Jogo em bin/cue de arquivo único, na pasta `neocd` |
 | PC Engine | Beetle PCE Fast | Out Run, Rondo of Blood | Perfeito (os sprites saíam espelhados; corrigido em `core-patches/mednafen_pce_fast.patch`) |
+| SNES | Snes9x, Snes9x 2010 | Top Gear 2, The Lion King | Perfeito |
+| Game Boy | Gearboy | Pokémon Yellow | Perfeito |
+| Virtual Boy | Beetle VB | — | Perfeito (teste do Ploggy) |
+| Atari 2600 | Stella 2014 | Pitfall! | Perfeito (teste do Ploggy) |
+| Atari Lynx | Handy | — | Perfeito (teste do Ploggy; precisa do `lynxboot.img` em `system/`) |
+| DOOM | PrBoom | Doom shareware, Freedoom | Perfeito. Abra o `.wad` do jogo; o `prboom.wad` é arquivo de suporte e fica em `system/` |
+| Cave Story | NXEngine | Cave Story | Perfeito (abra o `Doukutsu.exe`) |
 
 ---
 
@@ -292,4 +298,8 @@ Além do PR #14925 (port para wut/Aroma), este branch inclui:
 | Cloud sync | Só é ativada quando há threads (antes era ligada pelo sistema que compila) |
 | Áudio (AX) | Aceita taxas de 22050 a 48000 Hz: o DSP converte (`AXSetMultiVoiceSrcRatio`); sem `frames_consumed` (estimativa de taxa) |
 | Áudio (padrões) | No Wii U, controle de taxa e caminho s16 ligados por padrão (`config.def.h`) |
+| Vídeo (GX2) | Os quadros do menu usam uma matriz sem rotação: a faixa de seleção saía do lugar depois de jogos com tela girada |
+| Vídeo (GX2) | O driver desenha todos os vértices de um bloco (cursor em 9 pedaços, retângulos agrupados): o Ozone perdia as caixas de seleção e mostrava um "[" no canto |
+| Laço principal | Checa a fila de tarefas a cada quadro: "Fechar conteúdo" travava até apertar botões |
+| Miniaturas | O erro de download mostra o código HTTP |
 | Empacotamento | `wiiu-cores.sh` inclui os `.info` (`INFO_DIR`), usa `bsdtar` se faltar `unzip` e guarda o `.elf` de cada núcleo em `dist-scripts/elf/` (símbolos para ler endereços de travamentos) |
