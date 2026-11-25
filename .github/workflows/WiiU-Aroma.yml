@@ -77,8 +77,10 @@ jobs:
           - { name: gearsystem,          repo: drhelius/Gearsystem,                     branch: master,     dir: platforms/libretro, args: 'CC=powerpc-eabi-gcc CXX=powerpc-eabi-g++ AR=powerpc-eabi-ar' }
           - { name: gearcoleco,          repo: drhelius/Gearcoleco,                     branch: main,       dir: platforms/libretro, args: 'CC=powerpc-eabi-gcc CXX=powerpc-eabi-g++ AR=powerpc-eabi-ar' }
           - { name: quicknes,            repo: libretro/QuickNES_Core,                  branch: master,     dir: . }
-          - { name: snes9x2002,          repo: libretro/snes9x2002,                     branch: master,     dir: . }
-          - { name: snes9x2005,          repo: libretro/snes9x2005,                     branch: master,     dir: . }
+          # snes9x2002: audio is wrong on big-endian; Snes9x 2005 Plus covers it
+          # - { name: snes9x2002,          repo: libretro/snes9x2002,                     branch: master,     dir: . }
+          # snes9x2005: audio is wrong on big-endian; Snes9x 2005 Plus covers it
+          # - { name: snes9x2005,          repo: libretro/snes9x2005,                     branch: master,     dir: . }
           - { name: snes9x2005_plus,     repo: libretro/snes9x2005,                     branch: master,     dir: ., args: 'USE_BLARGG_APU=1' }
           # stella2023: its Makefile runs a configure step that fails for the Wii U
           # - { name: stella2023,          repo: libretro/stella2023,                     branch: master,     dir: . }
@@ -90,12 +92,15 @@ jobs:
           # freeintv: builds, but elf2rpl rejects its TLS relocations (types 70/72)
           # - { name: freeintv,            repo: libretro/FreeIntv,                       branch: master,     dir: . }
           - { name: pokemini,            repo: libretro/PokeMini,                       branch: master,     dir: . }
-          - { name: race,                repo: libretro/RACE,                           branch: master,     dir: . }
+          # race: crashes in tlcs_step on launch (big-endian); Beetle NeoPop covers NGP
+          # - { name: race,                repo: libretro/RACE,                           branch: master,     dir: . }
           # mednafen_pce: -U__UINT32_TYPE__ in its Wii U flags breaks GCC 16's libstdc++
           # - { name: mednafen_pce,        repo: libretro/beetle-pce-libretro,            branch: master,     dir: . }
           - { name: mednafen_supergrafx, repo: libretro/beetle-supergrafx-libretro,     branch: master,     dir: . }
           - { name: mednafen_lynx,       repo: libretro/beetle-lynx-libretro,           branch: master,     dir: . }
-          - { name: neocd,               repo: libretro/neocd_libretro,                 branch: master,     dir: . }
+          # NeoCD pinned before the August 2026 rewrite, which broke text and
+          # colours on big-endian (the fix layer packs pixel pairs little-endian)
+          - { name: neocd,               repo: libretro/neocd_libretro,                 branch: master,     dir: ., ref: 9e9ad181bed60f84f9cff02c03617b41e8a31cfe }
           # geolith: needs zlib, absent from the devkitPPC image
           # - { name: geolith,             repo: libretro/geolith-libretro,               branch: master,     dir: libretro }
           - { name: mame2000,            repo: libretro/mame2000-libretro,              branch: master,     dir: . }
