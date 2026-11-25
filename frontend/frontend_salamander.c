@@ -172,6 +172,11 @@ static void salamander_init(char *s, size_t len)
             RARCH_WARN("\"%s\" did not start when last launched; "
                   "looking for another core.\n", libretro_path);
          }
+         /* A core deleted since it was last used: launching a missing
+          * executable hangs some platforms' loaders (Wii U). */
+         else if (!path_is_valid(libretro_path))
+            RARCH_WARN("\"%s\" is missing; looking for another core.\n",
+                  libretro_path);
          else
          {
             strlcpy(s, libretro_path, len);
