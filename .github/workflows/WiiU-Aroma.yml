@@ -111,6 +111,43 @@ jobs:
           - { name: fbalpha2012_cps1,    repo: libretro/fbalpha2012_cps1,               branch: master,     dir: . }
           - { name: fbalpha2012_cps2,    repo: libretro/fbalpha2012_cps2,               branch: master,     dir: . }
           - { name: fbalpha2012_neogeo,  repo: libretro/fbalpha2012_neogeo,             branch: master,     dir: . }
+          # Second batch from Ploggy's list: computers and ports (untested on hardware)
+          - { name: 81,                  repo: libretro/81-libretro,                    branch: master,     dir: . }
+          - { name: bk,                  repo: libretro/bk-emulator,                    branch: master,     dir: . }
+          - { name: cap32,               repo: libretro/libretro-cap32,                 branch: master,     dir: . }
+          - { name: crocods,             repo: libretro/libretro-crocods,               branch: master,     dir: . }
+          - { name: fmsx,                repo: libretro/fmsx-libretro,                  branch: master,     dir: . }
+          - { name: frodo,               repo: libretro/frodo-libretro,                 branch: master,     dir: . }
+          - { name: fuse,                repo: libretro/fuse-libretro,                  branch: master,     dir: . }
+          - { name: hatari,              repo: libretro/hatari,                         branch: main,       dir: . }
+          - { name: puae,                repo: libretro/libretro-uae,                   branch: master,     dir: . }
+          - { name: quasi88,             repo: libretro/quasi88-libretro,               branch: master,     dir: . }
+          - { name: x1,                  repo: libretro/xmil-libretro,                  branch: master,     dir: libretro }
+          - { name: theodore,            repo: Zlika/theodore,                          branch: master,     dir: . }
+          - { name: vice_x64,            repo: libretro/vice-libretro,                  branch: master,     dir: ., args: 'EMUTYPE=x64' }
+          - { name: vice_x128,           repo: libretro/vice-libretro,                  branch: master,     dir: ., args: 'EMUTYPE=x128' }
+          - { name: vice_xplus4,         repo: libretro/vice-libretro,                  branch: master,     dir: ., args: 'EMUTYPE=xplus4' }
+          - { name: vice_xvic,           repo: libretro/vice-libretro,                  branch: master,     dir: ., args: 'EMUTYPE=xvic' }
+          - { name: vice_xpet,           repo: libretro/vice-libretro,                  branch: master,     dir: ., args: 'EMUTYPE=xpet' }
+          - { name: dosbox_pure,         repo: schellingb/dosbox-pure,                  branch: main,       dir: . }
+          - { name: scummvm,             repo: libretro/scummvm,                        branch: master,     dir: . }
+          - { name: tyrquake,            repo: libretro/tyrquake,                       branch: master,     dir: . }
+          - { name: vitaquake2,          repo: libretro/vitaquake2,                     branch: libretro,   dir: . }
+          - { name: cannonball,          repo: libretro/cannonball,                     branch: master,     dir: . }
+          - { name: reminiscence,        repo: libretro/REminiscence,                   branch: master,     dir: . }
+          - { name: xrick,               repo: libretro/xrick-libretro,                 branch: master,     dir: . }
+          - { name: mrboom,              repo: Javanaise/mrboom-libretro,               branch: master,     dir: . }
+          - { name: gong,                repo: libretro/gong,                           branch: master,     dir: . }
+          - { name: gw,                  repo: libretro/gw-libretro,                    branch: master,     dir: . }
+          - { name: retro8,              repo: libretro/retro8,                         branch: master,     dir: . }
+          - { name: lowresnx,            repo: timoinutilis/lowres-nx,                  branch: master,     dir: platform/LibRetro }
+          - { name: gme,                 repo: libretro/libretro-gme,                   branch: master,     dir: . }
+          - { name: pocketcdg,           repo: libretro/libretro-pocketcdg,             branch: master,     dir: . }
+          - { name: mu,                  repo: libretro/Mu,                             branch: master,     dir: libretroBuildSystem }
+          - { name: np2kai,              repo: AZO234/NP2kai,                           branch: wx_alpha,   dir: sdl }
+          - { name: chimerasnes,         repo: jamsilva/chimerasnes,                    branch: master,     dir: . }
+          - { name: fixnes,              repo: libretro/fixNES,                         branch: master,     dir: . }
+          - { name: fixgb,               repo: libretro/fixGB,                          branch: master,     dir: . }
           - { name: bluemsx,          repo: libretro/blueMSX-libretro,           branch: master,     dir: . }
     steps:
     - name: Tools
