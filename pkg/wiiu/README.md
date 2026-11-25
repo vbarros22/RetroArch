@@ -223,6 +223,12 @@ log em arquivo.
 | GBA / Game Boy / Color | mGBA | Pokémon Emerald, Pokémon Crystal | Perfeito |
 | Game Boy Color | Gambatte, Gearboy | Pokémon Crystal | Perfeito |
 | Mega Drive | Genesis Plus GX, PicoDrive | Super Monaco GP, Streets of Rage 2 | Perfeito |
+| Mega Drive / Mega-CD | Genesis Plus GX Wide | Sonic 2, Garou Densetsu Special | Os ajustes de tela larga vêm ligados e causam falhas gráficas (Sonic 2, menus do Garou); no Game Gear não amplia |
+| ColecoVision | Gearcoleco | Donkey Kong | Perfeito (BIOS `colecovision.rom`) |
+| Vectrex | vecx | Pole Position | Lento: 37 fps |
+| Odyssey² | O2EM | Alien Invaders | Perfeito |
+| Pokémon Mini | PokeMini | Pokémon Shock Tetris | Perfeito |
+| Arcade | MAME 2003 Midway | Mortal Kombat | Perfeito |
 | Master System | Genesis Plus GX, PicoDrive | Alex Kidd in Miracle World | Perfeito |
 | 32X | PicoDrive | Knuckles' Chaotix | Perfeito |
 | Mega-CD | Genesis Plus GX, PicoDrive | Garou Densetsu Special (CHD) | Perfeito. O Genesis Plus GX abre na hora; o PicoDrive demora mais para ler o CHD. Sair pelo HOME travava no Genesis Plus GX, que deixava a imagem do CD aberta; corrigido em `core-patches/genesis_plus_gx.patch` |
@@ -234,9 +240,11 @@ log em arquivo.
 | Arcade | FBNeo (completo) | — | Trava ao carregar (124 MB, grande demais para o Wii U); substituído pelas versões abaixo |
 | Neo Geo | FBNeo (Neo-Geo) | Metal Slug 2 | Perfeito |
 | CPS-1 / CPS-2 | FBNeo (CPS-1 / CPS-2) | — | Abre (o teste usou o romset errado) |
-| Neo Geo CD | FBNeo (Neo-Geo) | Metal Slug | Perfeito (a música de CD saía estourada por bytes trocados em big-endian; corrigido em `core-patches/fbneo_neogeo.patch`). Jogo em bin/cue de arquivo único, na pasta `neocd` |
+| Neo Geo CD | FBNeo (Neo-Geo) | Metal Slug | Funciona com `.cue` (a música de CD saía estourada; corrigido em `core-patches/fbneo_neogeo.patch`). Não abre `.chd`. Sangue branco e a metralhadora pesada não varre ao trocar de direção |
+| Neo Geo CD | NeoCD | Metal Slug (CHD e CUE) | Perfeito, sangue vermelho. **Recomendado para Neo Geo CD.** Fixado na versão de abril de 2026: a reescrita de agosto quebrou texto e cores em big-endian. BIOS em `system/neocd/` |
 | PC Engine | Beetle PCE Fast | Out Run, Rondo of Blood | Perfeito (os sprites saíam espelhados; corrigido em `core-patches/mednafen_pce_fast.patch`) |
-| SNES | Snes9x, Snes9x 2010 | Top Gear 2, The Lion King | Perfeito |
+| SNES | Snes9x | Top Gear 2, The Lion King | Perfeito |
+| SNES | Snes9x 2010 | The Lion King | Sem música de fundo (no Snes9x é perfeito) |
 | Game Boy | Gearboy | Pokémon Yellow | Perfeito |
 | Virtual Boy | Beetle VB | — | Perfeito (teste do Ploggy) |
 | Atari 2600 | Stella 2014 | Pitfall! | Perfeito (teste do Ploggy) |
