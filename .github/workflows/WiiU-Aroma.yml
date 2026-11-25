@@ -117,22 +117,26 @@ jobs:
           - { name: cap32,               repo: libretro/libretro-cap32,                 branch: master,     dir: . }
           - { name: crocods,             repo: libretro/libretro-crocods,               branch: master,     dir: . }
           - { name: fmsx,                repo: libretro/fmsx-libretro,                  branch: master,     dir: . }
-          - { name: frodo,               repo: libretro/frodo-libretro,                 branch: master,     dir: . }
-          - { name: fuse,                repo: libretro/fuse-libretro,                  branch: master,     dir: . }
-          - { name: hatari,              repo: libretro/hatari,                         branch: main,       dir: . }
-          - { name: puae,                repo: libretro/libretro-uae,                   branch: master,     dir: . }
+          - { name: frodo,               repo: libretro/frodo-libretro,                 branch: master,     dir: ., cflags: '-std=gnu17 -Wno-error=incompatible-pointer-types -Wno-error=implicit-function-declaration -Wno-error=int-conversion' }
+          - { name: fuse,                repo: libretro/fuse-libretro,                  branch: master,     dir: ., cflags: '-std=gnu17 -Wno-error=incompatible-pointer-types -Wno-error=implicit-function-declaration -Wno-error=int-conversion' }
+          # hatari: no libretro Makefile on its main branch
+          # - { name: hatari,              repo: libretro/hatari,                         branch: main,       dir: . }
+          # puae: its Wii U pthread shim no longer matches current wut's types
+          # - { name: puae,                repo: libretro/libretro-uae,                   branch: master,     dir: . }
           - { name: quasi88,             repo: libretro/quasi88-libretro,               branch: master,     dir: . }
           - { name: x1,                  repo: libretro/xmil-libretro,                  branch: master,     dir: libretro }
           - { name: theodore,            repo: Zlika/theodore,                          branch: master,     dir: . }
-          - { name: vice_x64,            repo: libretro/vice-libretro,                  branch: master,     dir: ., args: 'EMUTYPE=x64' }
-          - { name: vice_x128,           repo: libretro/vice-libretro,                  branch: master,     dir: ., args: 'EMUTYPE=x128' }
-          - { name: vice_xplus4,         repo: libretro/vice-libretro,                  branch: master,     dir: ., args: 'EMUTYPE=xplus4' }
-          - { name: vice_xvic,           repo: libretro/vice-libretro,                  branch: master,     dir: ., args: 'EMUTYPE=xvic' }
-          - { name: vice_xpet,           repo: libretro/vice-libretro,                  branch: master,     dir: ., args: 'EMUTYPE=xpet' }
-          - { name: dosbox_pure,         repo: schellingb/dosbox-pure,                  branch: main,       dir: . }
-          - { name: scummvm,             repo: libretro/scummvm,                        branch: master,     dir: . }
+          - { name: vice_x64,            repo: libretro/vice-libretro,                  branch: master,     dir: ., args: 'EMUTYPE=x64', cflags: '-std=gnu17 -Wno-error=incompatible-pointer-types -Wno-error=implicit-function-declaration -Wno-error=int-conversion' }
+          - { name: vice_x128,           repo: libretro/vice-libretro,                  branch: master,     dir: ., args: 'EMUTYPE=x128', cflags: '-std=gnu17 -Wno-error=incompatible-pointer-types -Wno-error=implicit-function-declaration -Wno-error=int-conversion' }
+          - { name: vice_xplus4,         repo: libretro/vice-libretro,                  branch: master,     dir: ., args: 'EMUTYPE=xplus4', cflags: '-std=gnu17 -Wno-error=incompatible-pointer-types -Wno-error=implicit-function-declaration -Wno-error=int-conversion' }
+          - { name: vice_xvic,           repo: libretro/vice-libretro,                  branch: master,     dir: ., args: 'EMUTYPE=xvic', cflags: '-std=gnu17 -Wno-error=incompatible-pointer-types -Wno-error=implicit-function-declaration -Wno-error=int-conversion' }
+          - { name: vice_xpet,           repo: libretro/vice-libretro,                  branch: master,     dir: ., args: 'EMUTYPE=xpet', cflags: '-std=gnu17 -Wno-error=incompatible-pointer-types -Wno-error=implicit-function-declaration -Wno-error=int-conversion' }
+          # dosbox_pure: no Wii U build path
+          # - { name: dosbox_pure,         repo: schellingb/dosbox-pure,                  branch: main,       dir: . }
+          # scummvm: the libretro fork does not build this way; needs its own setup
+          # - { name: scummvm,             repo: libretro/scummvm,                        branch: master,     dir: . }
           - { name: tyrquake,            repo: libretro/tyrquake,                       branch: master,     dir: . }
-          - { name: vitaquake2,          repo: libretro/vitaquake2,                     branch: libretro,   dir: . }
+          - { name: vitaquake2,          repo: libretro/vitaquake2,                     branch: libretro,   dir: ., cflags: '-std=gnu17 -Wno-error=incompatible-pointer-types -Wno-error=implicit-function-declaration -Wno-error=int-conversion' }
           - { name: cannonball,          repo: libretro/cannonball,                     branch: master,     dir: . }
           - { name: reminiscence,        repo: libretro/REminiscence,                   branch: master,     dir: . }
           - { name: xrick,               repo: libretro/xrick-libretro,                 branch: master,     dir: . }
@@ -144,10 +148,12 @@ jobs:
           - { name: gme,                 repo: libretro/libretro-gme,                   branch: master,     dir: . }
           - { name: pocketcdg,           repo: libretro/libretro-pocketcdg,             branch: master,     dir: . }
           - { name: mu,                  repo: libretro/Mu,                             branch: master,     dir: libretroBuildSystem }
-          - { name: np2kai,              repo: AZO234/NP2kai,                           branch: wx_alpha,   dir: sdl }
+          # np2kai: its build needs git tags (shallow clone has none)
+          # - { name: np2kai,              repo: AZO234/NP2kai,                           branch: wx_alpha,   dir: sdl }
           - { name: chimerasnes,         repo: jamsilva/chimerasnes,                    branch: master,     dir: . }
-          - { name: fixnes,              repo: libretro/fixNES,                         branch: master,     dir: . }
-          - { name: fixgb,               repo: libretro/fixGB,                          branch: master,     dir: . }
+          # - { name: fixnes,              repo: libretro/fixNES,                         branch: master,     dir: . }
+          # fixgb / fixnes: standalone ports (OpenAL), not libretro builds
+          # - { name: fixgb,               repo: libretro/fixGB,                          branch: master,     dir: . }
           - { name: bluemsx,          repo: libretro/blueMSX-libretro,           branch: master,     dir: . }
     steps:
     - name: Tools
@@ -183,6 +189,10 @@ jobs:
         cd "src/${{ matrix.dir }}"
         MF=Makefile
         for m in Makefile.libretro makefile.libretro; do [ -f $m ] && MF=$m && break; done
+        # -mwup is gone from current devkitPPC; several Makefiles still pass it
+        sed -i 's/ -mwup\b//g' "$MF"
+        # Older C sources: GCC 15+ defaults to C23 and makes these errors
+        if [ -n "${{ matrix.cflags }}" ]; then export CFLAGS="${{ matrix.cflags }}"; fi
         make -f $MF platform=wiiu -j$(nproc) ${{ matrix.args }}
         mkdir -p "$GITHUB_WORKSPACE/out"
         A=$(find . -maxdepth 2 -name '*_libretro_wiiu.a' | head -1)
