@@ -24,6 +24,7 @@
 #include <coreinit/memorymap.h>
 #include <coreinit/debug.h>
 #include <coreinit/dynload.h>
+#include <whb/log.h>
 #include <retro_atomic.h>
 
 #include "wiiu_dbg.h"
@@ -80,13 +81,38 @@ char*  exception_msgbuf;
 /* Set by the first core to fault; one shared buffer, one report. */
 static retro_atomic_int_t exception_entered = RETRO_ATOMIC_INT_INITIALIZER(0);
 
-void __attribute__((__noreturn__)) exception_cb(OSContext* ctx, OSExceptionType type)
+/* The report runs on the faulting thread after the exception returns:
+ * symbol lookups and logging take OS locks, which can hang inside the
+ * exception itself. r2/r13 are restored since faulting (JIT) code may
+ * not hold the ABI's values. */
+static OSContext       exception_ctx;
+static OSExceptionType exception_type;
+static uint32_t        exception_r2, exception_r13;
+static uint8_t         exception_stack[0x4000] __attribute__((aligned(16)));
+
+static void exception_log(size_t from)
 {
-   /* A second core faulting while the first one reports parks here,
-    * so the buffer is written by one core only. */
-   if (retro_atomic_exchange_int(&exception_entered, 1))
-      for (;;)
-         OSSuspendThread(OSGetCurrentThread());
+   char line[256];
+   const char *p = exception_msgbuf + from;
+   while (*p)
+   {
+      const char *nl = strchr(p, '\n');
+      size_t      n  = nl ? (size_t)(nl - p) : strlen(p);
+      if (n > sizeof(line) - 2)
+         n = sizeof(line) - 2;
+      memcpy(line, p, n);
+      line[n]     = '\n';
+      line[n + 1] = '\0';
+      WHBLogWrite(line);
+      p = nl ? nl + 1 : p + strlen(p);
+   }
+}
+
+static void __attribute__((__noreturn__)) exception_report(void)
+{
+   size_t trace;
+   OSContext *ctx       = &exception_ctx;
+   OSExceptionType type = exception_type;
 
    /*	No message buffer available, fall back onto MEM1 */
    if (!exception_msgbuf || !OSEffectiveToPhysical((uint32_t)exception_msgbuf))
@@ -166,11 +192,14 @@ void __attribute__((__noreturn__)) exception_cb(OSContext* ctx, OSExceptionType 
       ctx->ctr, ctx->cr, ctx->xer
    );
 
+   exception_log(0);
+   trace = wiiu_exception_handler_pos;
+
    /*	Stack trace!
       First, let's print the PC... */
    exception_print_symbol(ctx->srr0);
 
-   if (ctx->gpr[1])
+   if (ctx->gpr[1] && !(ctx->gpr[1] & 3) && OSIsAddressValid(ctx->gpr[1]))
    {
       int i;
       /*	Then the addresses off the stack.
@@ -179,8 +208,13 @@ void __attribute__((__noreturn__)) exception_cb(OSContext* ctx, OSExceptionType 
       if ((unsigned int)p->lr != ctx->lr)
          exception_print_symbol(ctx->lr);
 
-      for (i = 0; i < NUM_STACK_TRACE_LINES && p->up; p = p->up, i++)
+      for (i = 0; i < NUM_STACK_TRACE_LINES && p->up; i++)
+      {
          exception_print_symbol((unsigned int)p->lr);
+         if (((uint32_t)p->up & 3) || !OSIsAddressValid((uint32_t)p->up))
+            break;
+         p = p->up;
+      }
    }
    else
       buf_add("Stack pointer invalid. Could not trace further.\n");
@@ -190,23 +224,47 @@ void __attribute__((__noreturn__)) exception_cb(OSContext* ctx, OSExceptionType 
 #else
    buf_add("RetroArch " PACKAGE_VERSION " built " __DATE__);
 #endif
+   exception_log(trace);
    OSFatal(exception_msgbuf);
    for (;;) {}
 }
 
-BOOL __attribute__((__noreturn__)) exception_dsi_cb(OSContext* ctx)
+static BOOL exception_cb(OSContext* ctx, OSExceptionType type)
 {
-   exception_cb(ctx, OS_EXCEPTION_TYPE_DSI);
+   uint32_t sp;
+
+   /* A second core faulting while the first one reports parks here,
+    * so the buffer is written by one core only. */
+   if (retro_atomic_exchange_int(&exception_entered, 1))
+      for (;;)
+         OSSuspendThread(OSGetCurrentThread());
+
+   memcpy(&exception_ctx, ctx, sizeof(exception_ctx));
+   exception_type = type;
+
+   sp = ((uint32_t)(exception_stack + sizeof(exception_stack)) - 64) & ~15u;
+   *(uint32_t*)sp = 0;
+   ctx->gpr[1]    = sp;
+   ctx->gpr[2]    = exception_r2;
+   ctx->gpr[13]   = exception_r13;
+   ctx->lr        = 0;
+   ctx->srr0      = (uint32_t)exception_report;
+   return TRUE;
 }
 
-BOOL __attribute__((__noreturn__)) exception_isi_cb(OSContext* ctx)
+BOOL exception_dsi_cb(OSContext* ctx)
 {
-   exception_cb(ctx, OS_EXCEPTION_TYPE_ISI);
+   return exception_cb(ctx, OS_EXCEPTION_TYPE_DSI);
 }
 
-BOOL __attribute__((__noreturn__)) exception_prog_cb(OSContext* ctx)
+BOOL exception_isi_cb(OSContext* ctx)
 {
-   exception_cb(ctx, OS_EXCEPTION_TYPE_PROGRAM);
+   return exception_cb(ctx, OS_EXCEPTION_TYPE_ISI);
+}
+
+BOOL exception_prog_cb(OSContext* ctx)
+{
+   return exception_cb(ctx, OS_EXCEPTION_TYPE_PROGRAM);
 }
 
 void exception_print_symbol(uint32_t addr)
@@ -275,6 +333,8 @@ void exception_print_symbol(uint32_t addr)
 void init_os_exceptions(void)
 {
    exception_msgbuf = malloc(4096);
+   __asm__ volatile ("mr %0, 2" : "=r"(exception_r2));
+   __asm__ volatile ("mr %0, 13" : "=r"(exception_r13));
    /* On every core: the frontend's threads are not confined to the
     * core that installs the handler. */
    OSSetExceptionCallbackEx(OS_EXCEPTION_MODE_GLOBAL_ALL_CORES,
