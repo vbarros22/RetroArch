@@ -5,6 +5,9 @@
 # and by hand (Actions -> "Wii U (Aroma)" -> Run workflow). A tag named
 # wiiu-aroma-* also publishes the .zip as a GitHub pre-release.
 #
+# Run by hand with "cores" set to build only those cores: the package
+# then holds just their .rpx, which is quicker to download for a test.
+#
 # To add a core: one line in the matrix below (repo, branch, folder with
 # its makefile). Makefile.libretro is used when present, Makefile otherwise.
 name: Wii U (Aroma)
@@ -14,6 +17,11 @@ on:
     branches: [aroma-atual]
     tags: ['wiiu-aroma-*']
   workflow_dispatch:
+    inputs:
+      cores:
+        description: 'Only these cores, comma-separated (e.g. pcsx_rearmed,snes9x); empty builds all'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -157,16 +165,19 @@ jobs:
           - { name: bluemsx,          repo: libretro/blueMSX-libretro,           branch: master,     dir: . }
     steps:
     - name: Tools
+      if: ${{ !inputs.cores || contains(format(',{0},', inputs.cores), format(',{0},', matrix.name)) }}
       run: |
         apt-get update
         apt-get install -y --no-install-recommends git ca-certificates
         case "${{ matrix.args }}" in *REGEN_HEADERS*) \
           apt-get install -y --no-install-recommends perl gcc g++ libc6-dev ;; esac
     - uses: actions/checkout@v4
+      if: ${{ !inputs.cores || contains(format(',{0},', inputs.cores), format(',{0},', matrix.name)) }}
       with:
         path: RetroArch
         sparse-checkout: pkg/wiiu/core-patches
     - name: Fetch ${{ matrix.name }}
+      if: ${{ !inputs.cores || contains(format(',{0},', inputs.cores), format(',{0},', matrix.name)) }}
       run: |
         URL="https://github.com/${{ matrix.repo }}.git"
         if [ -n "${{ matrix.ref }}" ]; then
@@ -184,6 +195,7 @@ jobs:
         P="$GITHUB_WORKSPACE/RetroArch/pkg/wiiu/core-patches/${{ matrix.name }}.patch"
         if [ -f "$P" ]; then git -C src apply --verbose "$P"; fi
     - name: Build ${{ matrix.name }}
+      if: ${{ !inputs.cores || contains(format(',{0},', inputs.cores), format(',{0},', matrix.name)) }}
       run: |
         export PATH="$PATH:$DEVKITPRO/tools/bin:$DEVKITPPC/bin"
         cd "src/${{ matrix.dir }}"
@@ -199,6 +211,7 @@ jobs:
         test -n "$A" || { echo "no *_libretro_wiiu.a produced"; exit 1; }
         cp "$A" "$GITHUB_WORKSPACE/out/${{ matrix.name }}_libretro_wiiu.a"
     - uses: actions/upload-artifact@v4
+      if: ${{ !inputs.cores || contains(format(',{0},', inputs.cores), format(',{0},', matrix.name)) }}
       with:
         name: core-${{ matrix.name }}
         path: out/*.a
@@ -282,9 +295,15 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: RetroArch-WiiU-Aroma
-        path: |
-          RetroArch-WiiU-Aroma.zip
-          RetroArch/dist-scripts/elf/*.elf
+        path: RetroArch-WiiU-Aroma.zip
+
+    # Unstripped ELFs for reading crash addresses; kept apart so the
+    # package stays a small download
+    - uses: actions/upload-artifact@v4
+      with:
+        name: RetroArch-WiiU-elf
+        path: RetroArch/dist-scripts/elf/*.elf
+        retention-days: 14
 
     - name: Release (tags only)
       if: startsWith(github.ref, 'refs/tags/wiiu-aroma-')
