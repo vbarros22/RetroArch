@@ -682,6 +682,11 @@ static void main_loop(void)
          OSEnableHomeButtonMenu(settings->bools.input_wiiu_enable_hbm);
    }
 
+   /* Closed from the HOME menu: the quit path that saves the
+    * configuration never ran */
+   if (os_status == PROCUI_STATUS_EXITING && settings->bools.config_save_on_exit)
+      command_event(CMD_EVENT_MENU_SAVE_CURRENT_CONFIG, NULL);
+
    in_main = false;
    OSEnableHomeButtonMenu(FALSE);
 }
