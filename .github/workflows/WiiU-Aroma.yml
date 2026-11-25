@@ -45,7 +45,7 @@ jobs:
           # Tested on hardware
           - { name: fceumm,           repo: libretro/libretro-fceumm,            branch: master,     dir: . }
           - { name: snes9x,           repo: libretro/snes9x,                     branch: master,     dir: libretro }
-          - { name: pcsx_rearmed,     repo: vbarros22/pcsx_rearmed,              branch: wiiu-aroma, dir: . }
+          - { name: pcsx_rearmed,     repo: vbarros22/pcsx_rearmed,              branch: wiiu-debug-agpu, dir: . }
           # New in 0.2 (need testing on hardware)
           - { name: genesis_plus_gx,  repo: libretro/Genesis-Plus-GX,            branch: master,     dir: . }
           - { name: picodrive,        repo: libretro/picodrive,                  branch: master,     dir: . }
