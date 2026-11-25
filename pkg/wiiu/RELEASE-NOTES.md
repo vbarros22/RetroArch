@@ -31,7 +31,7 @@ Full guide (Portuguese): `LEIA-ME-WiiU.md` in the zip.
 | System | Core | Tested on hardware |
 |---|---|---|
 | NES / Famicom Disk System | FCEUmm, Nestopia | ✅ (FDS: use Nestopia) |
-| SNES | Snes9x, Snes9x 2010 | ✅ |
+| SNES | Snes9x | ✅ |
 | PlayStation | PCSX ReARMed (Lightrec) | ✅ most games 50–60 fps |
 | Mega Drive / Master System / 32X / Mega-CD | Genesis Plus GX, PicoDrive | ✅ |
 | Game Boy / Color | Gambatte, Gearboy | ✅ |

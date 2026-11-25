@@ -225,7 +225,7 @@ log em arquivo.
 | Mega Drive | Genesis Plus GX, PicoDrive | Super Monaco GP, Streets of Rage 2 | Perfeito |
 | Mega Drive / Mega-CD | Genesis Plus GX Wide | Sonic 2, Garou Densetsu Special | Os ajustes de tela larga vêm ligados e causam falhas gráficas (Sonic 2, menus do Garou); no Game Gear não amplia |
 | ColecoVision | Gearcoleco | Donkey Kong | Perfeito (BIOS `colecovision.rom`) |
-| Vectrex | vecx | Pole Position | Lento: 37 fps |
+| Vectrex | vecx | Pole Position, Mine Storm | Fora do pacote: Pole Position a 37 fps e o Mine Storm não começa |
 | Odyssey² | O2EM | Alien Invaders | Perfeito |
 | Pokémon Mini | PokeMini | Pokémon Shock Tetris | Perfeito |
 | Arcade | MAME 2003 Midway | Mortal Kombat | Perfeito |
@@ -244,7 +244,7 @@ log em arquivo.
 | Neo Geo CD | NeoCD | Metal Slug (CHD e CUE) | Perfeito, sangue vermelho. **Recomendado para Neo Geo CD.** Fixado na versão de abril de 2026: a reescrita de agosto quebrou texto e cores em big-endian. BIOS em `system/neocd/` |
 | PC Engine | Beetle PCE Fast | Out Run, Rondo of Blood | Perfeito (os sprites saíam espelhados; corrigido em `core-patches/mednafen_pce_fast.patch`) |
 | SNES | Snes9x | Top Gear 2, The Lion King | Perfeito |
-| SNES | Snes9x 2010 | The Lion King | Sem música de fundo (no Snes9x é perfeito) |
+| SNES | Snes9x 2010 | The Lion King | Sem música de fundo; fora do pacote (o Snes9x roda Star Fox e Yoshi's Island a 60 fps) |
 | Game Boy | Gearboy | Pokémon Yellow | Perfeito |
 | Virtual Boy | Beetle VB | — | Perfeito (teste do Ploggy) |
 | Atari 2600 | Stella 2014 | Pitfall! | Perfeito (teste do Ploggy) |

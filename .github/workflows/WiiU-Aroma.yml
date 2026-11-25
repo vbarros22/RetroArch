@@ -49,7 +49,8 @@ jobs:
           - { name: gearboy,          repo: libretro/Gearboy,                    branch: master,     dir: platforms/libretro, args: 'CC=powerpc-eabi-gcc CXX=powerpc-eabi-g++ AR=powerpc-eabi-ar' }
           - { name: nestopia,         repo: libretro/nestopia,                   branch: master,     dir: libretro }
           # RetroArch is built without threads on the Wii U, so no frontend rthreads
-          - { name: snes9x2010,       repo: libretro/snes9x2010,                 branch: master,     dir: ., args: 'HAVE_THREADS=0 THREADS_FROM_FRONTEND=0' }
+          # snes9x2010: no background music in some games; Snes9x runs Super FX games at full speed
+          # - { name: snes9x2010,       repo: libretro/snes9x2010,                 branch: master,     dir: ., args: 'HAVE_THREADS=0 THREADS_FROM_FRONTEND=0' }
           - { name: mednafen_pce_fast, repo: libretro/beetle-pce-fast-libretro,  branch: master,     dir: . }
           - { name: mednafen_vb,      repo: libretro/beetle-vb-libretro,         branch: master,     dir: . }
           - { name: mednafen_ngp,     repo: libretro/beetle-ngp-libretro,        branch: master,     dir: . }
@@ -87,7 +88,8 @@ jobs:
           - { name: prosystem,           repo: libretro/prosystem-libretro,             branch: master,     dir: . }
           - { name: a5200,               repo: libretro/a5200,                          branch: master,     dir: . }
           - { name: atari800,            repo: libretro/libretro-atari800,              branch: master,     dir: . }
-          - { name: vecx,                repo: libretro/libretro-vecx,                  branch: master,     dir: . }
+          # vecx: Mine Storm never starts and Pole Position runs at 37 fps
+          # - { name: vecx,                repo: libretro/libretro-vecx,                  branch: master,     dir: . }
           - { name: o2em,                repo: libretro/libretro-o2em,                  branch: master,     dir: . }
           # freeintv: builds, but elf2rpl rejects its TLS relocations (types 70/72)
           # - { name: freeintv,            repo: libretro/FreeIntv,                       branch: master,     dir: . }
