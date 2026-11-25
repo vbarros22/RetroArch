@@ -62,17 +62,20 @@ typedef struct
    /* Remainder of rate * AX_AUDIO_SAMPLE_COUNT / 48000 between frame
     * callbacks; only the callback touches it. */
    uint32_t step_acc;
+   /* Ring length in frames, sized from the requested latency */
+   uint32_t count;
    bool nonblock;
 } ax_audio_t;
 
-/* 3072 samples main buffer, 64ms total */
-#define AX_AUDIO_COUNT              3072
-#define AX_AUDIO_SIZE               (AX_AUDIO_COUNT << 1u)
+/* Ring length: at least 3072 frames (64 ms), more when the core asks
+ * for a longer latency, up to 16384 (about 370 ms at 44.1 kHz). */
+#define AX_AUDIO_COUNT_MIN          3072
+#define AX_AUDIO_COUNT_MAX          16384
 
 #define AX_AUDIO_SAMPLE_COUNT       144                         /* 3ms */
 #define AX_AUDIO_SAMPLE_MIN         (AX_AUDIO_SAMPLE_COUNT * 3) /* 9ms */
 #define AX_AUDIO_SAMPLE_LOAD        (AX_AUDIO_SAMPLE_COUNT * 10)/* 30ms */
-#define AX_AUDIO_MAX_FREE           (AX_AUDIO_COUNT - (AX_AUDIO_SAMPLE_COUNT * 2))
+#define AX_AUDIO_MAX_FREE(ax)       ((ax)->count - (AX_AUDIO_SAMPLE_COUNT * 2))
 /* Bound on a wait for the frame callback to free room: one wait, in
  * microseconds, and how many before the caller gets the pass back. */
 #define AX_AUDIO_WAIT_US     100000
@@ -163,17 +166,32 @@ static void* ax_audio_init(const char* device, unsigned rate, unsigned latency,
       return NULL;
    }
 
-   ax->buffer_l              = MEM1_alloc(AX_AUDIO_SIZE, 0x100);
-   ax->buffer_r              = MEM1_alloc(AX_AUDIO_SIZE, 0x100);
-   memset(ax->buffer_l,0,AX_AUDIO_SIZE);
-   memset(ax->buffer_r,0,AX_AUDIO_SIZE);
-   DCFlushRange(ax->buffer_l,AX_AUDIO_SIZE);
-   DCFlushRange(ax->buffer_r,AX_AUDIO_SIZE);
+   ax->rate = (rate >= 22050 && rate <= AX_AUDIO_RATE) ? rate : AX_AUDIO_RATE;
+   ax->count = (uint32_t)(((uint64_t)ax->rate * latency / 1000 + 63) & ~63u);
+   if (ax->count < AX_AUDIO_COUNT_MIN)
+      ax->count = AX_AUDIO_COUNT_MIN;
+   else if (ax->count > AX_AUDIO_COUNT_MAX)
+      ax->count = AX_AUDIO_COUNT_MAX;
+
+   ax->buffer_l              = MEM1_alloc(ax->count << 1, 0x100);
+   ax->buffer_r              = MEM1_alloc(ax->count << 1, 0x100);
+   if (!ax->buffer_l || !ax->buffer_r)
+   {
+      MEM1_free(ax->buffer_l);
+      MEM1_free(ax->buffer_r);
+      AXFreeMultiVoice(ax->mvoice);
+      free(ax);
+      return NULL;
+   }
+   memset(ax->buffer_l,0,ax->count << 1);
+   memset(ax->buffer_r,0,ax->count << 1);
+   DCFlushRange(ax->buffer_l,ax->count << 1);
+   DCFlushRange(ax->buffer_r,ax->count << 1);
 
    /* shared by both voices */
    offsets[0].currentOffset  = 0;
    offsets[0].loopOffset     = 0;
-   offsets[0].endOffset      = AX_AUDIO_COUNT - 1;
+   offsets[0].endOffset      = ax->count - 1;
    offsets[0].loopingEnabled = AX_VOICE_LOOP_ENABLED;
    offsets[0].dataType       = AX_VOICE_FORMAT_LPCM16;
    memcpy(&offsets[1], &offsets[0], sizeof(AXVoiceOffsets));
@@ -185,7 +203,6 @@ static void* ax_audio_init(const char* device, unsigned rate, unsigned latency,
 
    /* Take the requested rate when it is a sane one and let the DSP
     * convert it to the 48 kHz mix; otherwise write at 48 kHz. */
-   ax->rate = (rate >= 22050 && rate <= AX_AUDIO_RATE) ? rate : AX_AUDIO_RATE;
    ax->step_acc = 0;
    if (ax->rate != AX_AUDIO_RATE)
    {
@@ -241,12 +258,12 @@ static bool ax_audio_stop(void* data)
    return true;
 }
 
-static int ax_audio_limit(int in)
+static int ax_audio_limit(const ax_audio_t *ax, int in)
 {
 	if (in < 0)
-		in += AX_AUDIO_COUNT;
-	else if (in >= AX_AUDIO_COUNT)
-		in -= AX_AUDIO_COUNT;
+		in += (int)ax->count;
+	else if (in >= (int)ax->count)
+		in -= (int)ax->count;
 	return in;
 }
 
@@ -262,7 +279,7 @@ static bool ax_audio_start(void* data, bool is_shutdown)
       if (written > AX_AUDIO_SAMPLE_LOAD)
       {
          AXSetMultiVoiceCurrentOffset(ax->mvoice,
-               ax_audio_limit(ax->pos - written));
+               ax_audio_limit(ax, ax->pos - written));
          AXSetMultiVoiceState(ax->mvoice, AX_VOICE_STATE_PLAYING);
       }
    }
@@ -281,14 +298,14 @@ static ssize_t ax_audio_write(void* data, const void* buf, size_t len)
    if (!len || (len & 0x3))
       return 0;
 
-   if (count > AX_AUDIO_MAX_FREE)
-      count            = AX_AUDIO_MAX_FREE;
+   if (count > AX_AUDIO_MAX_FREE(ax))
+      count            = AX_AUDIO_MAX_FREE(ax);
 
    written             = ax_audio_written(ax);
    count_avail         = (
-         (written > AX_AUDIO_MAX_FREE)
+         (written > AX_AUDIO_MAX_FREE(ax))
          ? 0
-         : (AX_AUDIO_MAX_FREE - written));
+         : (AX_AUDIO_MAX_FREE(ax) - written));
 
    if (ax->nonblock)
    {
@@ -309,7 +326,7 @@ static ssize_t ax_audio_write(void* data, const void* buf, size_t len)
          OSWaitEventWithTimeout(&ax->frame_event,
                (OSTime)OSMicrosecondsToTicks(AX_AUDIO_WAIT_US));
          written     = ax_audio_written(ax);
-         count_avail = (written > AX_AUDIO_MAX_FREE ? 0 : (AX_AUDIO_MAX_FREE - written));
+         count_avail = (written > AX_AUDIO_MAX_FREE(ax) ? 0 : (AX_AUDIO_MAX_FREE(ax) - written));
          if (--laps < 0)
             break;
       }
@@ -332,7 +349,7 @@ static ssize_t ax_audio_write(void* data, const void* buf, size_t len)
       {
          ax->buffer_l[ax->pos] = src[i];
          ax->buffer_r[ax->pos] = src[i + 1];
-         ax->pos               = ax_audio_limit(ax->pos + 1);
+         ax->pos               = ax_audio_limit(ax, ax->pos + 1);
 
          /* wrapped around, make sure to store cache */
          if (ax->pos == 0)
@@ -340,8 +357,8 @@ static ssize_t ax_audio_write(void* data, const void* buf, size_t len)
             flush_p2_needed = 1;
             flush_p2        = ((count << 1) - i);
             DCStoreRangeNoSync(ax->buffer_l + start_pos,
-                  (AX_AUDIO_COUNT - start_pos) << 1);
-            DCStoreRangeNoSync(ax->buffer_r + start_pos, (AX_AUDIO_COUNT - start_pos) << 1);
+                  (ax->count - start_pos) << 1);
+            DCStoreRangeNoSync(ax->buffer_r + start_pos, (ax->count - start_pos) << 1);
          }
       }
 
@@ -393,7 +410,7 @@ static bool ax_audio_use_float(void* data) { return false; }
 static size_t ax_audio_write_avail(void* data)
 {
    ax_audio_t* ax = (ax_audio_t*)data;
-   size_t ret = AX_AUDIO_COUNT - ax_audio_written(ax);
+   size_t ret = ax->count - ax_audio_written(ax);
    return (ret < AX_AUDIO_SAMPLE_COUNT ? 0 : ret * 2 * sizeof(int16_t));
 }
 
@@ -411,14 +428,14 @@ static size_t ax_audio_wait_writable(void* data, size_t len)
     * stereo, four bytes each. */
    size_t want    = len / (2 * sizeof(int16_t));
 
-   if (want > AX_AUDIO_MAX_FREE / 2)
-      want = AX_AUDIO_MAX_FREE / 2;
+   if (want > AX_AUDIO_MAX_FREE(ax) / 2)
+      want = AX_AUDIO_MAX_FREE(ax) / 2;
 
    for (;;)
    {
       written = ax_audio_written(ax);
-      avail   = (written > AX_AUDIO_MAX_FREE)
-            ? 0 : (AX_AUDIO_MAX_FREE - written);
+      avail   = (written > AX_AUDIO_MAX_FREE(ax))
+            ? 0 : (AX_AUDIO_MAX_FREE(ax) - written);
       if (avail >= want)
          return avail * 2 * sizeof(int16_t);
       /* A stopped voice drains nothing, so waiting on it would never
@@ -447,7 +464,8 @@ static size_t ax_audio_wait_writable(void* data, size_t len)
  * frames, a frame per four bytes. They were reported in frames. */
 static size_t ax_audio_buffer_size(void* data)
 {
-   return AX_AUDIO_COUNT * 2 * sizeof(int16_t);
+   ax_audio_t* ax = (ax_audio_t*)data;
+   return ax->count * 2 * sizeof(int16_t);
 }
 
 static size_t ax_audio_underruns(void *data)
