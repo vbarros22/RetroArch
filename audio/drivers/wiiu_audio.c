@@ -70,7 +70,7 @@ typedef struct
 /* Ring length: at least 3072 frames (64 ms), more when the core asks
  * for a longer latency, up to 16384 (about 370 ms at 44.1 kHz). */
 #define AX_AUDIO_COUNT_MIN          3072
-#define AX_AUDIO_COUNT_MAX          16384
+#define AX_AUDIO_COUNT_MAX          3072 /* TEMP: test the 64 ms ring */
 
 #define AX_AUDIO_SAMPLE_COUNT       144                         /* 3ms */
 #define AX_AUDIO_SAMPLE_MIN         (AX_AUDIO_SAMPLE_COUNT * 3) /* 9ms */
