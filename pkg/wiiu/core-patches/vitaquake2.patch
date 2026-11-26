@@ -1,0 +1,13 @@
+diff --git a/libretro/libretro_core_options.h b/libretro/libretro_core_options.h
+index 963e296..928ca68 100644
+--- a/libretro/libretro_core_options.h
++++ b/libretro/libretro_core_options.h
+@@ -105,6 +105,8 @@ struct retro_core_option_v2_definition option_defs_us[] = {
+       "320x240"
+ #elif defined(_3DS)
+       "400x240"
++#elif defined(WIIU)
++      "640x368"
+ #else
+       "960x544"
+ #endif
