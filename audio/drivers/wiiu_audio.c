@@ -67,11 +67,10 @@ typedef struct
    bool nonblock;
 } ax_audio_t;
 
-/* Ring length: 3072 frames (64 ms) whatever latency is asked for. A
- * 192 ms ring (PCSX ReARMed asks for it) was seen to stop the core the
- * AX callback runs on within minutes. */
-#define AX_AUDIO_COUNT_MIN          3072
-#define AX_AUDIO_COUNT_MAX          3072
+/* Ring length: 6144 frames (128 ms) whatever latency is asked for;
+ * 64 ms underran under PCSX ReARMed. */
+#define AX_AUDIO_COUNT_MIN          6144
+#define AX_AUDIO_COUNT_MAX          6144
 
 #define AX_AUDIO_SAMPLE_COUNT       144                         /* 3ms */
 #define AX_AUDIO_SAMPLE_MIN         (AX_AUDIO_SAMPLE_COUNT * 3) /* 9ms */
