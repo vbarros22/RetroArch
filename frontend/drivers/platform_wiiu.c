@@ -301,6 +301,14 @@ static void frontend_wiiu_exec(const char* path, bool should_load_content)
       while (*(++cur_arg));
    }
 
+   /* Launching an RPX that is not there hangs on the Wii U loading
+    * screen; staying unlaunched exits to the Wii U menu instead */
+   if (!path_is_valid(path))
+   {
+      RARCH_ERR("[Wii U] \"%s\" is missing, not launching it.\n", path);
+      goto cleanup;
+   }
+
    if (string_starts_with(path, "fs:/vol/external01/"))
       path_relative_to(load_info.path, path, "fs:/vol/external01/", sizeof(load_info.path));
    else if (string_starts_with(path, "sd:/"))
@@ -314,11 +322,15 @@ static void frontend_wiiu_exec(const char* path, bool should_load_content)
    load_info.target = LOAD_RPX_TARGET_SD_CARD;
    ret              = Mocha_PrepareRPXLaunch(&load_info);
    if (ret != MOCHA_RESULT_SUCCESS)
+   {
+      RARCH_ERR("[Wii U] Preparing \"%s\" failed: %d.\n", load_info.path, (int)ret);
       goto cleanup;
+   }
 
    std_args.argString = argv_buf;
    std_args.size      = argv_len;
    ret                = Mocha_LaunchHomebrewWrapperEx(&std_args);
+   RARCH_LOG("[Wii U] Launching \"%s\": %d.\n", load_info.path, (int)ret);
    if (ret != MOCHA_RESULT_SUCCESS)
    {
       MochaRPXLoadInfo load_info_revert;
