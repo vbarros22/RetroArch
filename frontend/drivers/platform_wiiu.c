@@ -499,10 +499,16 @@ static void main_setup(void)
    fflush(stdout);
 }
 
+int fcloseall(void);
+
 static void main_teardown(void)
 {
    deinit_pad_libraries();
    RARCH_LOG("[Wii U] Shutdown: pads done.\n");
+   /* Files a core left open would otherwise be closed by exit(),
+    * after the filesystems below are gone */
+   fflush(NULL);
+   fcloseall();
    deinit_filesystems();
    RARCH_LOG("[Wii U] Shutdown: filesystems done.\n");
    deinit_logging();
