@@ -468,6 +468,7 @@ int main(int argc, char** argv)
       ProcUIStatus os_status;
       while ((os_status = ProcUIProcessMessages(TRUE)) != PROCUI_STATUS_EXITING)
       {
+         RARCH_LOG("[Wii U] Shutdown: ProcUI status %d.\n", (int)os_status);
          /* If nobody has requested a new app already (e.g. a core switch), we'll still be in foreground
           * We should exit to menu */
          if (os_status == PROCUI_STATUS_IN_FOREGROUND)
@@ -480,6 +481,7 @@ int main(int argc, char** argv)
       }
    }
 
+   RARCH_LOG("[Wii U] Shutdown: tearing down.\n");
    main_teardown();
    proc_exit();
    /* We always return 0 because if we don't, it can prevent loading a
@@ -500,7 +502,9 @@ static void main_setup(void)
 static void main_teardown(void)
 {
    deinit_pad_libraries();
+   RARCH_LOG("[Wii U] Shutdown: pads done.\n");
    deinit_filesystems();
+   RARCH_LOG("[Wii U] Shutdown: filesystems done.\n");
    deinit_logging();
    deinit_os_exceptions();
 }
