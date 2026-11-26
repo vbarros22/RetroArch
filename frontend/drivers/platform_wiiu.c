@@ -497,9 +497,16 @@ static void main_setup(void)
    fflush(stdout);
 }
 
+int fcloseall(void);
+
 static void main_teardown(void)
 {
    deinit_pad_libraries();
+   /* Files a core left open would otherwise be closed by exit(),
+    * after the filesystems below are gone, and the next RPX never
+    * starts */
+   fflush(NULL);
+   fcloseall();
    deinit_filesystems();
    deinit_logging();
    deinit_os_exceptions();
