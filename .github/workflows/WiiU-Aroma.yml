@@ -256,6 +256,13 @@ jobs:
         cd RetroArch/dist-scripts
         INFO_DIR=$GITHUB_WORKSPACE/libretro-core-info sh ./wiiu-cores.sh
 
+    - name: PCSX symbol map (debug)
+      run: |
+        export PATH="$PATH:$DEVKITPPC/bin"
+        for e in RetroArch/dist-scripts/elf/pcsx_rearmed*.elf; do
+          [ -f "$e" ] && powerpc-eabi-nm -n --defined-only "$e" | grep -i ' [tT] ' | sed 's/^/SYM /'
+        done || true
+
     - name: SD card layout
       run: |
         SD=$GITHUB_WORKSPACE/sd
