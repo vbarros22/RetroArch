@@ -30,6 +30,7 @@
 #include <string/stdstring.h>
 
 #include "../../configuration.h"
+#include "../../core_info.h"
 #include "../frontend.h"
 #include "../frontend_driver.h"
 #include "../../file_path_special.h"
@@ -365,6 +366,19 @@ static void frontend_wiiu_exitspawn(char* s, size_t len, char* args)
 }
 #endif /* IS_SALAMANDER */
 
+static void frontend_wiiu_process_args(int *argc, char *argv[])
+{
+#if !defined(IS_SALAMANDER) && !defined(HAVE_STATIC_DUMMY)
+   /* The core is the RPX that was launched: a launch does not update
+    * the salamander config, which would name another core. */
+   if (*argc >= 1 && argv && argv[0] && path_is_valid(argv[0]))
+   {
+      path_set(RARCH_PATH_CORE, argv[0]);
+      core_info_load(argv[0]);
+   }
+#endif
+}
+
 #ifndef IS_SALAMANDER
 static bool frontend_wiiu_set_fork(enum frontend_fork fork_mode)
 {
@@ -394,7 +408,7 @@ frontend_ctx_driver_t frontend_ctx_wiiu =
    frontend_wiiu_init,
    frontend_wiiu_deinit,
    frontend_wiiu_exitspawn,
-   NULL, /* process_args */
+   frontend_wiiu_process_args,
    frontend_wiiu_exec,
 #ifdef IS_SALAMANDER
    NULL, /* set_fork */
