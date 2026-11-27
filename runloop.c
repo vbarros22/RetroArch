@@ -2794,6 +2794,11 @@ bool runloop_environment_cb(unsigned cmd, void *data)
          }
          break;
 
+#ifdef WIIU
+      case RETRO_ENVIRONMENT_WIIU_LEND_FRAME:
+         return gx2_lend_frame((const struct retro_wiiu_frame_lend*)data);
+#endif
+
       case RETRO_ENVIRONMENT_SET_PIXEL_FORMAT:
       {
          video_driver_state_t *video_st  =

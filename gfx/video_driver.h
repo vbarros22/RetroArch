@@ -2587,6 +2587,24 @@ bool ctr_views_touch(int16_t x, int16_t y, int16_t *res_x, int16_t *res_y);
  * -0x8000 off them. False, with @res_x and @res_y as they were, when
  * it shows none. */
 bool gx2_views_touch(int16_t x, int16_t y, int16_t *res_x, int16_t *res_y);
+
+/* A core's offer of its frame memory for the GPU to sample in place:
+ * 16-bit little-endian xBGR1555, as PlayStation VRAM holds it. The
+ * memory stays as it is until the core offers another frame or the
+ * next one it offers. */
+#define RETRO_ENVIRONMENT_WIIU_LEND_FRAME (RETRO_ENVIRONMENT_PRIVATE | 0x5701)
+struct retro_wiiu_frame_lend
+{
+   const void *data;
+   unsigned width;
+   unsigned height;
+   size_t pitch;
+};
+
+/* Main thread: true when the next video_cb of @lend's frame will be
+ * sampled in place; false declines it and the core sends its own
+ * copy. */
+bool gx2_lend_frame(const struct retro_wiiu_frame_lend *lend);
 #endif
 #ifdef HAVE_OPENXR
 /* Main thread: the core's own view map and frame size the last frame

@@ -133,6 +133,7 @@ typedef struct
    GX2Sampler sampler_nearest[RARCH_WRAP_MAX];
    GX2Sampler sampler_linear[RARCH_WRAP_MAX];
    GX2Texture texture;
+   void *texture_data;
    frame_vertex_t *v;
    GX2_vec2 *ubo_vp;
    GX2_vec2 *ubo_tex;
@@ -224,6 +225,7 @@ typedef struct
    unsigned rotation;
    bool vsync;
    bool rgb32;
+   bool lent;
    bool smooth;
    bool keep_aspect;
    bool should_resize;
@@ -2056,7 +2058,7 @@ static void gx2_free(void *data)
 
    MEM2_free(wiiu->ctx_state);
    MEM2_free(wiiu->cmd_buffer);
-   MEM2_free(wiiu->texture.surface.image);
+   MEM2_free(wiiu->texture_data);
    MEM2_free(wiiu->menu.texture.surface.image);
    if (wiiu->white_texture)
    {
@@ -2083,11 +2085,91 @@ static void gx2_free(void *data)
    free(wiiu);
 }
 
+/* The frame a core lent for this video_cb, and where its rows start
+ * in the texture laid over it; main thread only. */
+static struct retro_wiiu_frame_lend gx2_lend;
+static GX2Surface gx2_lend_surface;
+static unsigned gx2_lend_u0, gx2_lend_v0;
+
+bool gx2_lend_frame(const struct retro_wiiu_frame_lend *lend)
+{
+   video_driver_state_t *video_st = video_state_get_ptr();
+   wiiu_video_t *wiiu             = NULL;
+   GX2Surface *surf               = &gx2_lend_surface;
+   uintptr_t addr, base;
+   unsigned ofs;
+
+   gx2_lend.data = NULL;
+   if (     !lend || !lend->data
+         || video_st->current_video != &video_wiiu
+         || !(wiiu = (wiiu_video_t*)video_st->data)
+         || wiiu->shader_preset
+         || !lend->width || !lend->height
+         || (lend->pitch & 1)
+         || lend->width > lend->pitch / 2)
+      return false;
+
+   /* The texture starts at the aligned address at or before the rows */
+   memset(surf, 0, sizeof(*surf));
+   surf->width    = lend->pitch / 2;
+   surf->height   = lend->height + 8;
+   surf->depth    = 1;
+   surf->dim      = GX2_SURFACE_DIM_TEXTURE_2D;
+   surf->tileMode = GX2_TILE_MODE_LINEAR_ALIGNED;
+   surf->format   = GX2_SURFACE_FORMAT_UNORM_R5_G5_B5_A1;
+   GX2CalcSurfaceSizeAndAlignment(surf);
+   if (surf->pitch != surf->width || !surf->alignment)
+      return false;
+
+   addr = (uintptr_t)lend->data;
+   base = addr & ~(uintptr_t)(surf->alignment - 1);
+   ofs  = (unsigned)(addr - base) / 2;
+   gx2_lend_u0 = ofs % surf->width;
+   gx2_lend_v0 = ofs / surf->width;
+   if (     gx2_lend_u0 + lend->width  > surf->width
+         || gx2_lend_v0 + lend->height > surf->height)
+      return false;
+
+   surf->image = (void*)base;
+   gx2_lend    = *lend;
+   return true;
+}
+
+static bool gx2_lent_frame_matches(const void *frame,
+      unsigned width, unsigned height, size_t pitch)
+{
+   return gx2_lend.data
+      && frame  == gx2_lend.data
+      && width  == gx2_lend.width
+      && height == gx2_lend.height
+      && pitch  == gx2_lend.pitch;
+}
+
+static void gx2_sample_lent_frame(wiiu_video_t *wiiu)
+{
+   memset(&wiiu->texture, 0, sizeof(GX2Texture));
+   wiiu->texture.surface       = gx2_lend_surface;
+   wiiu->texture.viewNumSlices = 1;
+   wiiu->texture.compMap       = GX2_COMP_SEL(_R, _G, _B, _1);
+   GX2InitTextureRegs(&wiiu->texture);
+   wiiu->lent   = true;
+   wiiu->width  = gx2_lend.width;
+   wiiu->height = gx2_lend.height;
+
+   GX2Invalidate(GX2_INVALIDATE_MODE_CPU_TEXTURE, (void*)gx2_lend.data,
+         gx2_lend.pitch * gx2_lend.height);
+   gx2_set_tex_coords(wiiu->v, &wiiu->texture,
+         gx2_lend_u0, gx2_lend_v0,
+         gx2_lend_u0 + gx2_lend.width, gx2_lend_v0 + gx2_lend.height,
+         wiiu->rotation);
+}
+
 static bool wiiu_init_frame_textures(wiiu_video_t *wiiu, unsigned width, unsigned height)
 {
    unsigned i;
 
-   MEM2_free(wiiu->texture.surface.image);
+   MEM2_free(wiiu->texture_data);
+   wiiu->lent = false;
 
    if (wiiu->shader_preset)
    {
@@ -2125,8 +2207,9 @@ static bool wiiu_init_frame_textures(wiiu_video_t *wiiu, unsigned width, unsigne
    GX2CalcSurfaceSizeAndAlignment(&wiiu->texture.surface);
    GX2InitTextureRegs(&wiiu->texture);
 
-   wiiu->texture.surface.image = MEM2_alloc(wiiu->texture.surface.imageSize,
+   wiiu->texture_data          = MEM2_alloc(wiiu->texture.surface.imageSize,
                                  wiiu->texture.surface.alignment);
+   wiiu->texture.surface.image = wiiu->texture_data;
    memset(wiiu->texture.surface.image, 0x0, wiiu->texture.surface.imageSize);
    GX2Invalidate(GX2_INVALIDATE_MODE_CPU_TEXTURE, wiiu->texture.surface.image,
                  wiiu->texture.surface.imageSize);
@@ -2495,9 +2578,13 @@ static bool gx2_frame(void *data, const void *frame,
    /* Can't call GX2ClearColor after GX2SetContextState for whatever reason */
    GX2SetContextState(wiiu->ctx_state);
 
-   if (frame)
+   if (frame && gx2_lent_frame_matches(frame, width, height, pitch)
+         && !wiiu->shader_preset)
+      gx2_sample_lent_frame(wiiu);
+   else if (frame)
    {
-      if (    (width  != wiiu->texture.surface.width)
+      if (    wiiu->lent
+           || (width  != wiiu->texture.surface.width)
            || (height != wiiu->texture.surface.height))
          wiiu_init_frame_textures(wiiu, width, height);
 
