@@ -19,6 +19,7 @@
 #include <malloc.h>
 #include <math.h>
 
+#include <coreinit/cache.h>
 #include <coreinit/time.h>
 
 #include <gx2/enum.h>
@@ -2156,8 +2157,16 @@ static void gx2_sample_lent_frame(wiiu_video_t *wiiu)
    wiiu->width  = gx2_lend.width;
    wiiu->height = gx2_lend.height;
 
-   GX2Invalidate(GX2_INVALIDATE_MODE_CPU_TEXTURE, (void*)gx2_lend.data,
-         gx2_lend.pitch * gx2_lend.height);
+   /* Store the shown rows without evicting them: the core draws into
+    * this memory again next frame. */
+   {
+      const uint8_t *row = (const uint8_t*)gx2_lend.data;
+      unsigned i;
+      for (i = 0; i < gx2_lend.height; i++, row += gx2_lend.pitch)
+         DCStoreRange((void*)row, gx2_lend.width * 2);
+   }
+   GX2Invalidate(GX2_INVALIDATE_MODE_TEXTURE, wiiu->texture.surface.image,
+         wiiu->texture.surface.imageSize);
    gx2_set_tex_coords(wiiu->v, &wiiu->texture,
          gx2_lend_u0, gx2_lend_v0,
          gx2_lend_u0 + gx2_lend.width, gx2_lend_v0 + gx2_lend.height,
